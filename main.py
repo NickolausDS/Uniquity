@@ -5,9 +5,11 @@ import os
 import inspect
 from os.path import isfile, isdir
 import logging
+import hashlib
+import wx
 
 import uniquity
-import hashlib
+import gui
 
 #Handles a Command Line Interface syle input menu
 class Commander(object):
@@ -32,6 +34,7 @@ class Commander(object):
 			"Example: " + self.commandName + " -h file1 directoryFoo/",
 			"FLAGS:",
 			"\t(no args): This help message.",
+			"\t-g --gui: start the interactive gui",
 			"\t-l: list all similar groups of matching files on the same line(default).",
 			"\t-h: list all similar groups of matching files in human readable format",
 			"\t-v --verbose: Print filename and completion while scanning.",
@@ -64,6 +67,11 @@ class Commander(object):
 					self.DEPTH = self.__getPosNumFlagArgument('-d', argv, idx)
 				elif(val == '-s' or val == "--maxsize"):
 					self.MAXFILESIZE = self.__getPosNumFlagArgument('-s', argv, idx)
+				elif(val == '-g' or val == '--gui'):
+					app = wx.App(False)
+					frame = gui.MainWindow(None, "Uniquity -- The Unique File Analyzer")
+					app.MainLoop()
+					exit(0)
 				elif(val == '--algorithm'):
 					self.HASHALG = self.__getStrArgument(idx)
 					if(self.HASHALG not in hashlib.algorithms):

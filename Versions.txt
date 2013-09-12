@@ -1,6 +1,18 @@
 
+Version .2 -- The interactive GUI -- September 9th, 2013
 
-Version .1 -- The Command Line Interface
+
+This marks the second release for Uniquity!
+
+This version allows the user to start up an interactive GUI instead of using the command line interface. 
+
+The features in this release are very minimal, and only give the user some very basic functionality of the tool. Some features include as follows:
+	* The user can choose files from a menu, and start the scanning process.
+	* User can navigate to the different panes, where they can view information about the scans
+
+
+Version .1 -- The Command Line Interface -- September 4th, 2013
+
 
 The first version of Uniquity has been released!
 
