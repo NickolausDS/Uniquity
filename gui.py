@@ -1,5 +1,10 @@
 import wx
+from wx.lib.mixins.listctrl import CheckListCtrlMixin, ListCtrlAutoWidthMixin
 import os
+
+import time
+import threading
+
 import guicommands
 
 class MainWindow(wx.Frame):
@@ -12,32 +17,86 @@ class MainWindow(wx.Frame):
 		
 		self.command = guicommands.GuiCommands(self)
 
+		self.mainSplitter = wx.SplitterWindow(self, -1, style=wx.SP_3DSASH, size=(300,300))
+
 		#All the setup, spread out into several methods
 		self.setupFileMenu()	
 		self.setupToolbar()
-		self.setupDirectoryPanel()
-		self.setupTabbedOutputDisplay()
+		# self.setupDirectoryPanel(mainSplitter)
+		
+		#SETUP DIRECTORY PANEL
+		self.directoryPanel = wx.Panel(self.mainSplitter)
+		self.directoryPanelSizer = wx.BoxSizer(wx.VERTICAL)
+		#self.directoryListings = wx.TextCtrl(self.directoryPanel, style=wx.TE_MULTILINE|wx.TE_READONLY)
+		#self.lc1 = wx.ListCtrl(splitter2, -1, style=wx.LC_LIST)
+		self.directoryListings = wx.ListCtrl(self.directoryPanel, -1, style=wx.LC_LIST)
+		title = wx.StaticText(self.directoryPanel, label='Files')
+		self.directoryPanelSizer.Add(title, 0, wx.ALIGN_CENTER|wx.BOTTOM)
+		self.directoryPanelSizer.Add(self.directoryListings, 100, border=10, flag= wx.EXPAND|wx.ALL|wx.ALIGN_TOP)
+		self.directoryPanel.SetSizer(self.directoryPanelSizer)
+		
+		#self.setupTabbedOutputDisplay(mainSplitter)
+		
+		#SETUP TABBED OUTPUT DISPLAY
+		self.tabHolder = wx.Notebook(self.mainSplitter, -1, style=(wx.NB_TOP))
+		
+		# font = wx.SystemSettings_GetFont(wx.SYS_SYSTEM_FONT)
+		# font.SetPointSize(12)
+		
+		self.dupFilePanel = wx.Panel(self.tabHolder)
+		self.dupFileSizer = wx.BoxSizer(wx.HORIZONTAL)		
+		self.dupFileOutput = wx.ListCtrl(self.dupFilePanel, -1, style=wx.LC_REPORT | wx.LC_NO_HEADER)
+		self.dupFileSizer.Add(self.dupFileOutput, 100, flag=wx.EXPAND | wx.ALL)
+		self.dupFilePanel.SetSizer(self.dupFileSizer)
+		
+		
+		self.filesSkippedOutput = wx.TextCtrl(self.tabHolder, pos=(300,20), size=(200,300), style=wx.TE_MULTILINE | wx.TE_READONLY)
+		
+		self.tabHolder.AddPage(self.dupFilePanel, "Duplicate Files Found")
+		self.tabHolder.AddPage(self.filesSkippedOutput, "Files Skipped")
+		
+		#Put all errors on this pane
+		method = lambda string: self.filesSkippedOutput.AppendText(string)
+		self.command.log.warning = method
+		self.command.log.error = method
+		self.command.log.critical = method
 
 		##PUT MAIN GUI TOGETHER
-		self.bottomAreaSizer = wx.BoxSizer(wx.HORIZONTAL)
-		self.bottomAreaSizer.Add(self.directoryPanelSizer, 30, wx.EXPAND)
-		self.bottomAreaSizer.Add(self.tabHolder, 70, wx.EXPAND)
-
+		self.mainSplitter.SplitVertically(self.directoryPanel, self.tabHolder)
+		#SetMinimumPaneSize stops the splitter from being closed by the user
+		self.mainSplitter.SetMinimumPaneSize(20)
 		#Combine the top (toolbar) and bottom (everything else) into the master
+		self.mainSplitter.Unsplit(self.tabHolder)
+
+		# self.progressPanel = wx.Panel(self)
+		# self.progressGauge = wx.Gauge(self.progressPanel, -1, 100, size=(250,25))
+		# self.progressCompletion = wx.StaticText(self.progressPanel, label="Progress Completion:")
+		# self.progressInfo = wx.StaticText(self.progressPanel, label="File: ")
+		# self.progressSizer = wx.BoxSizer(wx.VERTICAL)
+		# 
+		# self.progressSizer.Add(self.progressCompletion, 0, wx.EXPAND | wx.ALL, 10)
+		# self.progressSizer.Add(self.progressGauge, 0, wx.EXPAND | wx.ALL, 10)
+		# self.progressSizer.Add(self.progressInfo, 0, wx.EXPAND | wx.ALL, 10)
+		# self.progressPanel.SetSizer(self.progressSizer)
+		# self.progressPanel.SetBackgroundColour('#4f5049')
+        
+
 		self.masterSizer = wx.BoxSizer(wx.VERTICAL)
-		self.masterSizer.Add(self.toolbarSizer, 0, wx.EXPAND)
-		self.masterSizer.Add(self.bottomAreaSizer, 1, wx.EXPAND)
+		paddingPanel = wx.Panel(self, size=(0,20))
+		self.masterSizer.Add(paddingPanel, 0)
+		self.masterSizer.Add(self.mainSplitter, 1, wx.EXPAND)
+		# self.masterSizer.Add(self.progressPanel, 0, wx.EXPAND | wx.ALL)
 		# #Layout sizers
 		self.SetSizer(self.masterSizer)
 		self.SetAutoLayout(1)
-		self.masterSizer.Fit(self)
 		self.Show()
 		
 		#STATUS BAR
 		self.statusBar = self.CreateStatusBar() # A Statusbar in the bottom of the window
 		self.command.log.debug = lambda text: self.statusBar.SetStatusText(text)
 		self.command.log.info = lambda text: self.statusBar.SetStatusText(text)
-		#self.statusBar.SetStatusText("HELLO WORLD")
+		self.statusBar.SetStatusText("Welcome to the Uniquity File Scanner!")
+		
 		
 	
 	
@@ -54,49 +113,67 @@ class MainWindow(wx.Frame):
 		self.SetMenuBar(menuBar)  # Adding the MenuBar to the Frame content.
 
 		# Events.
-		self.Bind(wx.EVT_MENU, self.command.fileMenuOpen, menuOpen)
+		# self.Bind(wx.EVT_MENU, self.command.fileMenuOpen, menuOpen)
 		self.Bind(wx.EVT_MENU, self.command.fileMenuExit, menuExit)
 		self.Bind(wx.EVT_MENU, self.command.fileMenuAbout, menuAbout)
 		
-		
 
 	def setupToolbar(self):
-		self.toolbarSizer = wx.BoxSizer(wx.HORIZONTAL)
+		# self.toolbarSizer = wx.BoxSizer(wx.HORIZONTAL)
 		#original buttons are here, but won't be used yet
 		#toolbarButtontexts = [">", "+", "-", "X", "^-^"]
-		toolbarButtontexts = [">", "+", "-", "X", "^-^"]
-		self.toolbarButtons = []
+		toolbar = self.CreateToolBar()
+		start = toolbar.AddLabelTool(wx.ID_ANY, 'Start', wx.Bitmap('resources/start_icon.png'))
+		toolbar.AddSeparator()
+		addFile = toolbar.AddLabelTool(wx.ID_ANY, 'Add File', wx.Bitmap('resources/add_icon.png'))
+		removeFile = toolbar.AddLabelTool(wx.ID_ANY, 'Remove File', wx.Bitmap('resources/remove_icon.png'))
 		
-		
-		for i in toolbarButtontexts:
-			self.toolbarButtons.append(wx.Button(self, -1, i, size=(64,32)))
-		for i in self.toolbarButtons:
-			self.toolbarSizer.Add(i, wx.EXPAND)
-			
-			
-		self.Bind(wx.EVT_BUTTON, self.command.toolbarMenuAdd, self.toolbarButtons[0])
-		
+		toolbar.AddSeparator()
+		viewFile = toolbar.AddLabelTool(wx.ID_ANY, 'View File', wx.Bitmap('resources/view_icon.png'))
+		deleteFile = toolbar.AddLabelTool(wx.ID_ANY, 'Delete File', wx.Bitmap('resources/delete_icon.png'))
 
-	def setupDirectoryPanel(self):
-		# self.directoryPanel = wx.Panel(self)
-		self.directoryPanelSizer = wx.BoxSizer(wx.VERTICAL)
-		self.directoryListings = wx.TextCtrl(self, style=wx.TE_MULTILINE|wx.TE_READONLY)
-		title = wx.StaticText(self, label='Files')
-		self.directoryPanelSizer.Add(title, 0, wx.ALIGN_CENTER|wx.BOTTOM)
-		self.directoryPanelSizer.Add(self.directoryListings, 100, border=10, flag= wx.EXPAND|wx.ALL|wx.ALIGN_TOP)
-		
-	def setupTabbedOutputDisplay(self):
-		#TABBED OUTPUT DISPLAY
-		self.tabHolder = wx.Notebook(self, -1, style=(wx.NB_TOP))
-		self.dupFileOutput = wx.TextCtrl(self.tabHolder, pos=(300,20), size=(200,300), style=wx.TE_MULTILINE | wx.TE_READONLY)
-		self.filesSkippedOutput = wx.TextCtrl(self.tabHolder, pos=(300,20), size=(200,300), style=wx.TE_MULTILINE | wx.TE_READONLY)
-		
-		self.tabHolder.AddPage(self.dupFileOutput, "Duplicate Files Found")
-		self.tabHolder.AddPage(self.filesSkippedOutput, "Files Skipped")
-		
-		#Put all errors on this pane
-		method = lambda string: self.filesSkippedOutput.AppendText(string)
-		self.command.log.warning = method
-		self.command.log.error = method
-		self.command.log.critical = method
+		# qtool = toolbar.AddLabelTool(wx.ID_ANY, 'Quit', wx.Bitmap('resources/view_icon.png'))
+		toolbar.Realize()
 
+		self.Bind(wx.EVT_TOOL, self.startScanning, start)
+		self.Bind(wx.EVT_TOOL, self.command.toolbarAddFiles, addFile)
+		
+		self.Bind(wx.EVT_TOOL, self.command.toolbarRemoveFile, removeFile)
+		self.Bind(wx.EVT_TOOL, self.command.toolbarViewFile, viewFile)
+		self.Bind(wx.EVT_TOOL, self.command.toolbarDeleteFile, deleteFile)
+
+		
+	def startScanning(self, e):
+		if self.command.toolbarStart(e):
+			self.mainSplitter.SplitVertically(self.directoryPanel, self.tabHolder)
+		else:
+			self.printStatusError("Add files in order to start scanning")
+
+	def printStatusError(self, error):
+		class ResetStatusBarTimer(threading.Thread):
+			def __init__(self, milliseconds, statusBar):
+				threading.Thread.__init__(self)
+				self.milliseconds = milliseconds
+				self.statusBar = statusBar
+
+			def run(self):
+				time.sleep(self.milliseconds / 1000.0)
+				self.statusBar.SetBackgroundColour("WHITE")
+				self.statusBar.Refresh()
+				del self
+				
+		self.statusBar.SetStatusText(error)
+		self.statusBar.SetBackgroundColour("RED")
+		self.statusBar.Refresh()
+		sbr = ResetStatusBarTimer(1500, self.statusBar)
+		sbr.start()
+		
+	def OnQuit(self, e):
+		self.Close()
+
+class ResizingListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
+	def __init__(self, parent):
+		wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT | wx.LC_NO_HEADER)
+		# CheckListCtrlMixin.__init__(self)
+		ListCtrlAutoWidthMixin.__init__(self)
+				

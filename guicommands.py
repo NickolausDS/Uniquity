@@ -3,6 +3,7 @@ import wx
 import logging
 import os
 import sys
+import subprocess
 
 # import thread
 
@@ -21,6 +22,8 @@ class GuiCommands(object):
 		self.HASHALG = "md5"
 		self.DEPTH = 0 #Zero means no max self.DEPTH (go forever)
 		self.files = []
+		# self.filesToScan = []
+		# self.filesScanned = []
 		
 		self.fileBank.log = logging.getLogger("main")
 		
@@ -37,14 +40,65 @@ class GuiCommands(object):
 
 
 	#TOOLBAR MENU EVENTS
-	def toolbarMenuAdd(self, e):
-		if not self.fileBank.fileListings:
-			self.fileMenuOpen(e)
+	def toolbarStart(self, e):
+		index = 0
+		files = []
+		while(index != self.mainGUI.directoryListings.GetItemCount() ):
+			files.append(self.mainGUI.directoryListings.GetItemText(index))
+			index += 1
+		
+		# files = self.mainGUI.directoryListings.GetColumn(0)
+		# print "FILES>" + files
+		if not files:
+			# self.toolbarAddFiles(e)
+			return False
+			
+		
+		self.fileBank.addFiles(files, self.MAXDIRDEPTH)
 		self.fileBank.start()
 		self.fileBank.log.info("Finished.")
 		
-		self.mainGUI.dupFileOutput.SetValue(self.fileBank.getPrettyOutput())
-		# self.mainGUI.dupFileOutput.AppendText("self.mystderr.getvalue()")
+		self.refreshDuplicateFileOutput()
+		return True
+		
+	def toolbarAddFiles(self, e):
+		dirname = "."
+		""" Open a file"""
+		dlg = wx.DirDialog(self.mainGUI, "Choose a Directory", ".")
+		if dlg.ShowModal() == wx.ID_OK:
+			self.mainGUI.directoryListings.InsertStringItem(0, dlg.GetPath())
+		dlg.Destroy()
+				
+	def toolbarRemoveFile(self, e):
+		selection = self.getSelectedInListCtrl(self.mainGUI.directoryListings)
+
+		for selected in selection:
+			self.mainGUI.directoryListings.DeleteItem(selected)
+		# selected = self.mainGUI.directoryListings.GetFocusedItem()
+		
+	def toolbarViewFile(self, e):
+		selected = self.getSelectedInListCtrl(self.mainGUI.dupFileOutput)
+		if not selected:
+			print "ERROR IN TOOLBAR"
+		else:
+			selection = self.mainGUI.dupFileOutput.GetItemText(selected[0])
+			if sys.platform == "win32":
+				os.startfile(selected[0])
+			elif sys.platform == "darwin":
+				print "SELECTED> " + selection
+				subprocess.Popen(['open', '-R', selection])
+			
+		
+	def toolbarDeleteFile(self, e):
+		selected = self.getSelectedInListCtrl(self.mainGUI.dupFileOutput)
+		selection = self.mainGUI.dupFileOutput.GetItemText(selected[0])
+		if not selection:
+			print "ERROR, NOT IMPLEMENTED YET"
+		else:
+			os.remove(selection)
+			
+		self.refreshModelFileList()
+		self.refreshDuplicateFileOutput()
 
 	def fileMenuAbout(self,e):
 	   # Create a message dialog box
@@ -54,19 +108,77 @@ class GuiCommands(object):
 
 	def fileMenuExit(self,e):
 	   self.mainGUI.Close(True)  # Close the frame.
+	
+	def refreshDuplicateFileOutput(self):
+		#self.mainGUI.dupFileOutput.SetValue(self.fileBank.getPrettyOutput())
+		dups = self.fileBank.secondPass
+		# self.mainGUI.leftOutput.ClearAll()
+		self.mainGUI.dupFileOutput.ClearAll()
+		self.mainGUI.dupFileOutput.InsertColumn(0, "Header Column", width=100)
+		self.mainGUI.dupFileOutput.InsertColumn(1, "File Column", width=1000)
+		# print self.mainGUI.leftOutput.GetColumnCount()
+		# leftColStr = ""
+		tuplelist = []
+		for keys, vals in dups.items():
+			if len(vals) > 1:
+				for idx, each in enumerate(vals):
+					if idx == 0:
+						tuplelist.append(("Duplicates", "") )
+					tuplelist.append(("", each))
+				tuplelist.append(("",""))
+					
+		# print str(tuplelist)
+		for i in tuplelist:
+			# print str(i)
+			index = self.mainGUI.dupFileOutput.InsertStringItem(sys.maxint, i[0])
+			self.mainGUI.dupFileOutput.SetStringItem(index, 1, i[1])
+			# self.mainGUI.dupFileOutput.SetItemBackgroundColour(index, "RED")
+					
+	
+	def refreshModelFileList(self):
+		#Go through a list of all the files we scanned, and make sure:
+		# 1. the file exists
+		# 2. the file is within the list of files to scan
+		def fileInMasterList(thefile):
+			for userDir in self.files:
+				print "THIS IS THE USER DRI> " + userDir
+				if userDir in thefile:
+					return True
+			return False
+					
+		for eachList in self.fileBank.secondPass.values():
+			for eachFile in eachList:
+				if not fileInMasterList(eachFile) or not os.path.exists(eachFile):
+					eachList.remove(eachFile)
+						
+	def getSelectedInListCtrl(self, listctrl):
+		selection = []
+		# start at -1 to get the first selected item
+		current = -1
+		while True:
+			# next = self.mainGUI.directoryListings.GetNextSelected(listctrl, current)
+			next = listctrl.GetNextSelected(current)
+			if next == -1:
+				break
+			selection.append(next)
+			current = next
+		return selection
 
-	def fileMenuOpen(self,e):
-		dirname = "."
-		""" Open a file"""
-		#dlg = wx.DirDialog(self.mainGUI, "Choose a file", dirname, "", "*.*", wx.OPEN)
-		dlg = wx.DirDialog(self.mainGUI, "Choose a Directory", ".")
-		if dlg.ShowModal() == wx.ID_OK:
-			#self.filename = dlg.GetFilename()
-			#self.dirname = dlg.GetDirectory()
-			print dlg.GetPath()
-			self.fileBank.addFiles([os.path.abspath(dlg.GetPath())], self.MAXDIRDEPTH)
-			self.mainGUI.directoryListings.AppendText(dlg.GetPath())
-		dlg.Destroy()
+# class ProgressUpdater(threading.Thread):
+# 
+# class GUIWorkerQueue(threading.Thread):
+# 	def __init__(self):
+# 		#init thread
+# 		
+# 	def run(self):
+# 		toScan = [files if files not in self.filesScanned for files in self.filesToScan]
+# 		for each in toScan:
+# 			
+# 		#While there are still files in filesToScan
+# 			#Start the progress updater
+# 			#Scan a directory
+		
+		
 		
 class LogRedirecter(object):	
 	def __init__(self, newLocation):
@@ -110,6 +222,5 @@ class LogRedirecter(object):
 		def __init__(self, message):
 			self.message = message
 	
-	
-	
+
 	
