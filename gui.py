@@ -103,17 +103,33 @@ class MainWindow(wx.Frame):
 	def setupFileMenu(self):
 		# Setting up the menu.
 		filemenu= wx.Menu()
-		menuOpen = filemenu.Append(wx.ID_OPEN, "&Open"," Open a file to edit")
+		#menuOpen = filemenu.Append(wx.ID_OPEN, "&Open"," Open a file to edit")
+		menuNew = filemenu.Append(wx.ID_NEW, "&New", "Empty the current list of scanned files and start again")
+		# menuAdd = filemenu.Append(wx.ID_ADD, "Add", "Add a new directory")
 		menuAbout= filemenu.Append(wx.ID_ABOUT, "&About"," Information about this program")
 		menuExit = filemenu.Append(wx.ID_EXIT,"E&xit"," Terminate the program")
+		
+		editMenu = wx.Menu()
+		editMenu.Append(wx.ID_PASTE, "&Paste", "Paste a file path to be scanned")
+		
+		viewMenu = wx.Menu()
+		viewMenu.Append(wx.ID_ANY, "Show Hash", "Show the resulting hash for each duplicate file displayed")
+		
+		helpMenu = wx.Menu()
+		helpMenu.Append(wx.ID_ANY, "Quick Help", "A very simple quick start guide for using Uniquity")
 
 		# Creating the menubar.
 		menuBar = wx.MenuBar()
 		menuBar.Append(filemenu,"&File") # Adding the "filemenu" to the MenuBar
+		# menuBar.Append(editMenu,"Edit")
+		# menuBar.Append(viewMenu,"View")
+		menuBar.Append(helpMenu,"Help")
 		self.SetMenuBar(menuBar)  # Adding the MenuBar to the Frame content.
 
 		# Events.
 		# self.Bind(wx.EVT_MENU, self.command.fileMenuOpen, menuOpen)
+		self.Bind(wx.EVT_MENU, self.command.fileMenuNew, menuNew)
+		# self.Bind(wx.EVT_MENU, self.command.toolbarMenuAdd, menuAdd)
 		self.Bind(wx.EVT_MENU, self.command.fileMenuExit, menuExit)
 		self.Bind(wx.EVT_MENU, self.command.fileMenuAbout, menuAbout)
 		
@@ -131,6 +147,9 @@ class MainWindow(wx.Frame):
 		toolbar.AddSeparator()
 		viewFile = toolbar.AddLabelTool(wx.ID_ANY, 'View File', wx.Bitmap('resources/view_icon.png'))
 		deleteFile = toolbar.AddLabelTool(wx.ID_ANY, 'Delete File', wx.Bitmap('resources/delete_icon.png'))
+
+		#We need the id's to be specific for this command to work
+		#toolbar.EnableTool(wx.ID_ANY, False)
 
 		# qtool = toolbar.AddLabelTool(wx.ID_ANY, 'Quit', wx.Bitmap('resources/view_icon.png'))
 		toolbar.Realize()

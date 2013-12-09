@@ -20,6 +20,8 @@
 		* Add red whenever there is an error 
 	* Add file menu (menu at top of application).
 		* File
+			* New
+			* Add 
 			* Quit
 		* Edit
 			* Paste
