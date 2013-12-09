@@ -1,3 +1,9 @@
+.DS_Store
 *.pyc
-testdir
 
+#Folders to not track with git
+
+resources/
+#Automated temp files with which to derive releases. Don't include
+release/
+testing/test_files

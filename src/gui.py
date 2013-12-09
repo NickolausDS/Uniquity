@@ -7,6 +7,8 @@ import threading
 
 import guicommands
 
+IMAGE_DIR="assets/"
+
 class MainWindow(wx.Frame):
 	def __init__(self, parent, title):
 		self.dirname=''
@@ -139,19 +141,19 @@ class MainWindow(wx.Frame):
 		#original buttons are here, but won't be used yet
 		#toolbarButtontexts = [">", "+", "-", "X", "^-^"]
 		toolbar = self.CreateToolBar()
-		start = toolbar.AddLabelTool(wx.ID_ANY, 'Start', wx.Bitmap('resources/start_icon.png'))
+		start = toolbar.AddLabelTool(wx.ID_ANY, 'Start', wx.Bitmap(IMAGE_DIR+'start_icon.png'))
 		toolbar.AddSeparator()
-		addFile = toolbar.AddLabelTool(wx.ID_ANY, 'Add File', wx.Bitmap('resources/add_icon.png'))
-		removeFile = toolbar.AddLabelTool(wx.ID_ANY, 'Remove File', wx.Bitmap('resources/remove_icon.png'))
+		addFile = toolbar.AddLabelTool(wx.ID_ANY, 'Add File', wx.Bitmap(IMAGE_DIR+'add_icon.png'))
+		removeFile = toolbar.AddLabelTool(wx.ID_ANY, 'Remove File', wx.Bitmap(IMAGE_DIR+'remove_icon.png'))
 		
 		toolbar.AddSeparator()
-		viewFile = toolbar.AddLabelTool(wx.ID_ANY, 'View File', wx.Bitmap('resources/view_icon.png'))
-		deleteFile = toolbar.AddLabelTool(wx.ID_ANY, 'Delete File', wx.Bitmap('resources/delete_icon.png'))
+		viewFile = toolbar.AddLabelTool(wx.ID_ANY, 'View File', wx.Bitmap(IMAGE_DIR+'view_icon.png'))
+		deleteFile = toolbar.AddLabelTool(wx.ID_ANY, 'Delete File', wx.Bitmap(IMAGE_DIR+'delete_icon.png'))
 
 		#We need the id's to be specific for this command to work
 		#toolbar.EnableTool(wx.ID_ANY, False)
 
-		# qtool = toolbar.AddLabelTool(wx.ID_ANY, 'Quit', wx.Bitmap('resources/view_icon.png'))
+		# qtool = toolbar.AddLabelTool(wx.ID_ANY, 'Quit', wx.Bitmap(IMAGE_DIR+'view_icon.png'))
 		toolbar.Realize()
 
 		self.Bind(wx.EVT_TOOL, self.startScanning, start)
