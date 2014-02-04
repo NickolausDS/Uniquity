@@ -1,13 +1,23 @@
 import wx
 from wx.lib.mixins.listctrl import CheckListCtrlMixin, ListCtrlAutoWidthMixin
 import os
+import sys
 
 import time
 import threading
 
 import guicommands
 
-IMAGE_DIR="assets/"
+
+if getattr(sys, 'frozen', False):
+    # we are running in a |PyInstaller| bundle
+    BASEPATH = sys._MEIPASS
+else:
+    # we are running in a normal Python environment
+    BASEPATH = os.path.dirname(__file__)
+
+IMAGE_DIR=os.path.join(BASEPATH, "assets" + os.path.sep)
+
 
 class MainWindow(wx.Frame):
 	def __init__(self, parent, title):
