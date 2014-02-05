@@ -5,5 +5,8 @@
 
 resources/
 #Automated temp files with which to derive releases. Don't include
-release/
+release/build
+release/dist
+release/*.dmg
+release/*.app
 testing/test_files
