@@ -151,6 +151,10 @@ class MainWindow(wx.Frame):
 		#original buttons are here, but won't be used yet
 		#toolbarButtontexts = [">", "+", "-", "X", "^-^"]
 		toolbar = self.CreateToolBar()
+		#We add noLog in order to suspend wxlogging for a short time.
+		#The reason is that it now gives a bogus error to the end user about the pngs we are
+		#about to load. We want to keep that from happening. Delete noLog after adding menu items
+		noLog = wx.LogNull()
 		start = toolbar.AddLabelTool(wx.ID_ANY, 'Start', wx.Bitmap(IMAGE_DIR+'start_icon.png'))
 		toolbar.AddSeparator()
 		addFile = toolbar.AddLabelTool(wx.ID_ANY, 'Add File', wx.Bitmap(IMAGE_DIR+'add_icon.png'))
@@ -162,9 +166,9 @@ class MainWindow(wx.Frame):
 
 		#We need the id's to be specific for this command to work
 		#toolbar.EnableTool(wx.ID_ANY, False)
-
 		# qtool = toolbar.AddLabelTool(wx.ID_ANY, 'Quit', wx.Bitmap(IMAGE_DIR+'view_icon.png'))
 		toolbar.Realize()
+		del noLog
 
 		self.Bind(wx.EVT_TOOL, self.startScanning, start)
 		self.Bind(wx.EVT_TOOL, self.command.toolbarAddFiles, addFile)
@@ -172,7 +176,7 @@ class MainWindow(wx.Frame):
 		self.Bind(wx.EVT_TOOL, self.command.toolbarRemoveFile, removeFile)
 		self.Bind(wx.EVT_TOOL, self.command.toolbarViewFile, viewFile)
 		self.Bind(wx.EVT_TOOL, self.command.toolbarDeleteFile, deleteFile)
-
+		
 		
 	def startScanning(self, e):
 		if self.command.toolbarStart(e):
