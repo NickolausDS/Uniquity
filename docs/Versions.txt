@@ -1,4 +1,12 @@
 
+Version .3 
+
+* Get rid of the 'start' button.
+	* Scan files immediately when they are added to Uniquity
+* Disable Delete button for now
+* Enable drag and drop feature. This program really needs it. 
+
+
 Version .2 -- The interactive GUI -- September 9th, 2013
 
 
