@@ -26,8 +26,13 @@ class MainWindow(wx.Frame):
 		# A "-1" in the size parameter instructs wxWidgets to use the default size.
 		# In this case, we select 200px width and the default height.
 		wx.Frame.__init__(self, parent, title=title, size=(800,600))
-		
+
 		self.command = guicommands.GuiCommands(self)
+
+		#setup drag and drop. It fires when someone drags a file onto the main window
+		#and calls the method "addFiles"
+		self.dt = DragAndDrop(self, self.command.addFiles)
+		self.SetDropTarget(self.dt)
 
 		self.mainSplitter = wx.SplitterWindow(self, -1, style=wx.SP_3DSASH, size=(300,300))
 
@@ -35,13 +40,15 @@ class MainWindow(wx.Frame):
 		self.setupFileMenu()	
 		self.setupToolbar()
 		# self.setupDirectoryPanel(mainSplitter)
-		
+
 		#SETUP DIRECTORY PANEL
 		self.directoryPanel = wx.Panel(self.mainSplitter)
 		self.directoryPanelSizer = wx.BoxSizer(wx.VERTICAL)
 		#self.directoryListings = wx.TextCtrl(self.directoryPanel, style=wx.TE_MULTILINE|wx.TE_READONLY)
 		#self.lc1 = wx.ListCtrl(splitter2, -1, style=wx.LC_LIST)
 		self.directoryListings = wx.ListCtrl(self.directoryPanel, -1, style=wx.LC_LIST)
+		self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableRemoveTool, self.directoryListings)
+		self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableRemoveTool, self.directoryListings)
 		title = wx.StaticText(self.directoryPanel, label='Files')
 		self.directoryPanelSizer.Add(title, 0, wx.ALIGN_CENTER|wx.BOTTOM)
 		self.directoryPanelSizer.Add(self.directoryListings, 100, border=10, flag= wx.EXPAND|wx.ALL|wx.ALIGN_TOP)
@@ -58,6 +65,8 @@ class MainWindow(wx.Frame):
 		self.dupFilePanel = wx.Panel(self.tabHolder)
 		self.dupFileSizer = wx.BoxSizer(wx.HORIZONTAL)		
 		self.dupFileOutput = wx.ListCtrl(self.dupFilePanel, -1, style=wx.LC_REPORT | wx.LC_NO_HEADER)
+		self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableDupFileTools, self.dupFileOutput)
+		self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableDupFileTools, self.dupFileOutput)
 		self.dupFileSizer.Add(self.dupFileOutput, 100, flag=wx.EXPAND | wx.ALL)
 		self.dupFilePanel.SetSizer(self.dupFileSizer)
 		
@@ -147,29 +156,34 @@ class MainWindow(wx.Frame):
 		
 
 	def setupToolbar(self):
-		# self.toolbarSizer = wx.BoxSizer(wx.HORIZONTAL)
-		#original buttons are here, but won't be used yet
-		#toolbarButtontexts = [">", "+", "-", "X", "^-^"]
-		toolbar = self.CreateToolBar()
+		self.toolbar = self.CreateToolBar()
 		#We add noLog in order to suspend wxlogging for a short time.
 		#The reason is that it now gives a bogus error to the end user about the pngs we are
 		#about to load. We want to keep that from happening. Delete noLog after adding menu items
 		noLog = wx.LogNull()
-		start = toolbar.AddLabelTool(wx.ID_ANY, 'Start', wx.Bitmap(IMAGE_DIR+'start_icon.png'))
-		toolbar.AddSeparator()
-		addFile = toolbar.AddLabelTool(wx.ID_ANY, 'Add File', wx.Bitmap(IMAGE_DIR+'add_icon.png'))
-		removeFile = toolbar.AddLabelTool(wx.ID_ANY, 'Remove File', wx.Bitmap(IMAGE_DIR+'remove_icon.png'))
 		
-		toolbar.AddSeparator()
-		viewFile = toolbar.AddLabelTool(wx.ID_ANY, 'View File', wx.Bitmap(IMAGE_DIR+'view_icon.png'))
-		deleteFile = toolbar.AddLabelTool(wx.ID_ANY, 'Delete File', wx.Bitmap(IMAGE_DIR+'delete_icon.png'))
-
-		#We need the id's to be specific for this command to work
-		#toolbar.EnableTool(wx.ID_ANY, False)
-		# qtool = toolbar.AddLabelTool(wx.ID_ANY, 'Quit', wx.Bitmap(IMAGE_DIR+'view_icon.png'))
-		toolbar.Realize()
+		
+		start = self.toolbar.AddLabelTool(wx.ID_ANY, 'Start', wx.Bitmap(IMAGE_DIR+'start_icon.png'))
+		self.toolbar.AddSeparator()
+		addFile = self.toolbar.AddLabelTool(wx.ID_ADD, 'Add File', wx.Bitmap(IMAGE_DIR+'add_icon.png'))
+		removeFile = self.toolbar.AddLabelTool(wx.ID_REMOVE, 'Remove File', wx.Bitmap(IMAGE_DIR+'remove_icon.png'))
+		self.toolbar.EnableTool(wx.ID_REMOVE, False)
+		
+		
+		self.toolbar.AddSeparator()
+		viewFile = self.toolbar.AddLabelTool(wx.ID_VIEW_DETAILS, 'View File', wx.Bitmap(IMAGE_DIR+'view_icon.png'))
+		deleteFile = self.toolbar.AddLabelTool(wx.ID_DELETE, 'Delete File', wx.Bitmap(IMAGE_DIR+'delete_icon.png'))
+		#We will disable both tools until we can use them
+		self.toolbar.EnableTool(wx.ID_VIEW_DETAILS, False)
+		self.toolbar.EnableTool(wx.ID_DELETE, False)
+		
+		#show the toolbar
+		self.toolbar.Realize()
+		
+		#re-enable logging
 		del noLog
 
+		#Bind all the methods to the toolbar buttons
 		self.Bind(wx.EVT_TOOL, self.startScanning, start)
 		self.Bind(wx.EVT_TOOL, self.command.toolbarAddFiles, addFile)
 		
@@ -205,10 +219,35 @@ class MainWindow(wx.Frame):
 		
 	def OnQuit(self, e):
 		self.Close()
+		
+	def enableRemoveTool(self, e):
+		self.toolbar.EnableTool(wx.ID_REMOVE, True)
+
+	def disableRemoveTool(self, e):
+		self.toolbar.EnableTool(wx.ID_REMOVE, False)
+
+	def enableDupFileTools(self, e):
+		if self.command.getSelectedDups():
+			self.toolbar.EnableTool(wx.ID_VIEW_DETAILS, True)
+			self.toolbar.EnableTool(wx.ID_DELETE, True)
+		
+	def disableDupFileTools(self, e):
+		self.toolbar.EnableTool(wx.ID_VIEW_DETAILS, False)
+		self.toolbar.EnableTool(wx.ID_DELETE, False)
 
 class ResizingListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
 	def __init__(self, parent):
 		wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT | wx.LC_NO_HEADER)
 		# CheckListCtrlMixin.__init__(self)
 		ListCtrlAutoWidthMixin.__init__(self)
+		
+class DragAndDrop(wx.FileDropTarget):
+	def __init__(self, window, callbackFunct):
+		wx.FileDropTarget.__init__(self)
+		self.callbackFunct = callbackFunct
+
+	def OnDropFiles(self, x, y, filenames):
+		#Yep, that's literally all we do.
+		self.callbackFunct(filenames)
+
 				

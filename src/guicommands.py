@@ -279,6 +279,7 @@ class GuiCommands(object):
 		
 	def getStatus(self):
 		pass
+		
 
 # class ProgressUpdater(threading.Thread):
 # 

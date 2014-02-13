@@ -7,6 +7,7 @@ class scanObject(object):
 	
 	def __init__(self, filename):
 		self.filename = filename
+		self.hasScanned = False
 		
 	def __str__(self):
 		return str(self.filename)
@@ -25,3 +26,11 @@ class scanObject(object):
 			return True
 		else:
 			return False
+		
+	#Set if the directory has been scanned
+	def setHasScanned(self, boolean_status):
+		self.hasScanned = boolean_status
+		
+	#Returns true if the file or directory has been scanned		
+	def hasScanned(self):
+		return self.hasScanned
