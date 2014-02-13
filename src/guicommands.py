@@ -5,6 +5,8 @@ import os
 import sys
 import subprocess
 
+import scanObject
+
 # import thread
 
 from cStringIO import StringIO
@@ -24,13 +26,14 @@ class GuiCommands(object):
 		self.DEPTH = 0 #Zero means no max self.DEPTH (go forever)
 		
 		#Set data
-		self.fileBank = uniquity.Uniquity()		
-		self.files = []
+		self.fileBank = uniquity.Uniquity()	
+		#List of files and dirs we will scan with uniquity	
+		self.scanObjects = []
 		self.fileMenuNew(None)
 		# self.filesToScan = []
 		# self.filesScanned = []
 
-		
+		self.dupFileOutputMap = {}
 
 
 	#TOOLBAR MENU EVENTS
@@ -60,7 +63,7 @@ class GuiCommands(object):
 		""" Open a file"""
 		dlg = wx.DirDialog(self.mainGUI, "Choose a Directory", ".")
 		if dlg.ShowModal() == wx.ID_OK:
-			self.mainGUI.directoryListings.InsertStringItem(0, dlg.GetPath())
+			self.addFiles([dlg.GetPath()])
 		dlg.Destroy()
 				
 	def toolbarRemoveFile(self, e):
@@ -68,17 +71,19 @@ class GuiCommands(object):
 		if not selection:
 			self.mainGUI.printStatusError("Select a file or directory to remove it")
 		else:
-			for selected in selection:
-				self.mainGUI.directoryListings.DeleteItem(selected)
+			self.removeFiles(selection)
 				
 		# selected = self.mainGUI.directoryListings.GetFocusedItem()
 		
 	def toolbarViewFile(self, e):
-		selected = self.getSelectedInListCtrl(self.mainGUI.dupFileOutput)
+		selected = self.getSelectedDups()
 		if not selected:
-			self.mainGUI.printStatusError("Select a scanned file in the duplicate list to view it")
+			self.mainGUI.printStatusError("Select a file in the duplicate list to view it")
 		else:
-			selection = self.mainGUI.dupFileOutput.GetItemText(selected[0])
+			#We only support opening one file at a time
+			selection = selected[0]
+			print "DEBUG: " + selection
+			# selection = self.mainGUI.dupFileOutput.GetItemText(selected[0], 1)
 			if sys.platform == "win32":
 				os.startfile(selected[0])
 			elif sys.platform == "darwin":
@@ -87,51 +92,26 @@ class GuiCommands(object):
 				self.mainGUI.printStatusERror("I'm sorry, but this tool failed to work for your current platform")
 		
 	def toolbarDeleteFile(self, e):
-		selected = self.getSelectedInListCtrl(self.mainGUI.dupFileOutput)
-		if not selected:
-			self.mainGUI.printStatusError("Select a scanned duplicate file to delete it. WARNING! THIS BUTTON IS DANGEROUS!!!")
+		toDelete = self.getSelectedDups()
+		if toDelete:
+			message = "Are you sure you want to delete these files:\n"
+			message += "\n".join(self.getNiceDupNames(toDelete))
+			title = "They will never bother you again."
+			askDialog = wx.MessageDialog(None, 
+										title, 
+										message, 
+										style=wx.YES_NO | wx.NO_DEFAULT | wx.ICON_EXCLAMATION)
+			result = askDialog.ShowModal()
+			askDialog.Destroy()	
+			if result == wx.ID_YES:
+				for theFile in toDelete:
+					try:
+						os.remove(theFile)
+						self.setDupFileOutputBackgroundColor(theFile, "RED")
+					except Exception as e:
+						self.setDupFileOutputBackgroundColor(theFile, "YELLOW")
 		else:
-			errors = False
-			skipped = 0
-			for each in selected:
-				#Skip the display rows (that say "Duplicate:")
-				if self.mainGUI.dupFileOutput.GetItemText(each, 1) == "" or "Duplicate" in self.mainGUI.dupFileOutput.GetItemText(each, 1):
-					#If this was the only thing selected (and it can't be deleted)
-					# selected.remove(each)
-					skipped += 1
-					continue
-				# print self.mainGUI.dupFileOutput.GetItemText(each, 0)
-				thefile = self.mainGUI.dupFileOutput.GetItemText(each, 1)
-				print thefile
-				if thefile:
-					if not os.path.exists(thefile):
-						self.mainGUI.printStatusError("Already deleted '"+thefile+"', I can't delete it any further!")
-						# selected.remove(each)
-						skipped += 1
-					else:
-						try:
-							os.remove(thefile)
-							self.mainGUI.dupFileOutput.SetItemBackgroundColour(each, "RED")
-						except Exception as e:
-							errors = True
-							self.mainGUI.dupFileOutput.SetItemBackgroundColour(each, "YELLOW")
-							skipped += 1
-			if errors:
-				self.mainGUI.printStatusError("Unable to remove the files marked in yellow")
-			else:
-				numDs = len(selected) - skipped
-				if numDs == 1:
-					self.mainGUI.SetStatusText("Deleted " + self.mainGUI.dupFileOutput.GetItemText(each, 1))
-				elif numDs > 1:
-					self.mainGUI.SetStatusText("Deleted " + str(numDs) + " files.")
-				else:
-					return
-						
-				
-			
-			
-		# self.refreshModelFileList()
-		# self.refreshDuplicateFileOutput()
+			self.mainGUI.printStatusError("Select one or more duplicate files from the list to delete.")
 		
 	def fileMenuNew(self, e):
 		#Set files to empty
@@ -184,8 +164,12 @@ class GuiCommands(object):
 		# print self.mainGUI.leftOutput.GetColumnCount()
 		# leftColStr = ""
 		tuplelist = []
+		#Go through ALL the duplicates we have
 		for keys, vals in dups.items():
 			if len(vals) > 1:
+				#For each SET of duplicates, we display two columns.
+				#The first row says 'duplicates', the last is empty
+				#All the middle rows, second columns, the dups are displayed
 				for idx, each in enumerate(vals):
 					if idx == 0:
 						tuplelist.append(("Duplicates", "") )
@@ -194,10 +178,9 @@ class GuiCommands(object):
 					
 		# print str(tuplelist)
 		for i in tuplelist:
-			# print str(i)
 			index = self.mainGUI.dupFileOutput.InsertStringItem(sys.maxint, i[0])
+			self.dupFileOutputMap[i] = index
 			self.mainGUI.dupFileOutput.SetStringItem(index, 1, i[1])
-			# self.mainGUI.dupFileOutput.SetItemBackgroundColour(index, "RED")
 					
 	
 	def refreshModelFileList(self):
@@ -215,7 +198,72 @@ class GuiCommands(object):
 			for eachFile in eachList:
 				if not fileInMasterList(eachFile) or not os.path.exists(eachFile):
 					eachList.remove(eachFile)
-						
+	
+	#Add new files or directories to scan with uniquity
+	def addFiles(self, files):
+		for each in files:
+			newSO = scanObject.scanObject(each)
+			self.scanObjects.append(newSO)
+			self.mainGUI.directoryListings.InsertStringItem(0, newSO.getFilename())
+	
+	#Remove files or directories from the list of scanObjects to scan with uniqutiy.		
+	def removeFiles(self, files):
+		for each in files:
+			newSO = scanObject.scanObject(each)
+			self.mainGUI.directoryListings.DeleteItem(newSO.getFilename())
+			self.scanObjects.remove(newSO)
+			
+		
+	#
+	def updateFiles(self):
+		pass
+	
+	def setDupFileOutputBackgroundColor(self, string, wxcolor):
+		itemID = self.dupFileOutputMap.get(('', unicode(string)), -1)
+		if itemID != -1:
+			self.mainGUI.dupFileOutput.SetItemBackgroundColour(itemID, wxcolor)
+		else:
+			raise Exception("Failed to set LC color, no item named " + str(string) + " Exists.")
+	
+	#This returns a nice user-viewable path for a requested duplicate file
+	#It basically shortenes the beginning of the filename to the basename
+	#of the scanObject.
+	def getNiceDupName(self, dup):
+		for each in self.scanObjects:
+			if each.contains(dup):
+				return dup.replace(each.getFilename(), each.getBasename())
+		
+		#This should oly happen if we're given bad data.
+		raise Exception("Variable " + str(dup) + " has no parent")
+		
+	#Get a list of dup names (see above method for singles)
+	def getNiceDupNames(self, dups):
+		thelist = []
+		for filename in dups:
+			thelist.append(self.getNiceDupName(filename))
+		return thelist
+		
+	#Gets all selected duplicate files in list, ignores deleted files
+	#Note: filenames are in unicode
+	def getSelectedDups(self):
+		selectedFiles = []
+		selected = self.getSelectedInListCtrl(self.mainGUI.dupFileOutput)
+		if not selected:
+			#return the empty list, nothing was selected
+			return selectedFiles
+		else:
+			for aFile in selected:
+				#The text is always a path
+				filePath = self.mainGUI.dupFileOutput.GetItemText(aFile, 1)
+				#Ignore empty space or rows that say "Duplicate"
+				if filePath == "" or "Duplicate" in filePath:
+					continue
+				elif not os.path.exists(filePath):
+					continue
+				else:
+					selectedFiles.append(filePath)
+		return selectedFiles
+				
 	def getSelectedInListCtrl(self, listctrl):
 		selection = []
 		# start at -1 to get the first selected item
