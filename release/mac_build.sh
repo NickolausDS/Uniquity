@@ -46,7 +46,7 @@ fi
 
 # set up your app name, version number, and background image file name
 APP_NAME="Uniquity"
-VERSION="0.1.0-pre-alpha"
+VERSION=`grep "VERSION" ../changelog.md | head -n 1 | sed -e "s/##VERSION //g"`
 DMG_BACKGROUND_IMG="Background.png"
 
 # you should not need to change these
