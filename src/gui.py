@@ -87,6 +87,7 @@ class MainWindow(wx.Frame):
 		#SetMinimumPaneSize stops the splitter from being closed by the user
 		self.mainSplitter.SetMinimumPaneSize(20)
 		#Combine the top (toolbar) and bottom (everything else) into the master
+		#We will re-split the toolbar when we have dup files to show the user
 		self.mainSplitter.Unsplit(self.tabHolder)
 
 		# self.progressPanel = wx.Panel(self)

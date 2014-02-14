@@ -166,13 +166,15 @@ class GuiCommands(object):
 		tuplelist = []
 		#Go through ALL the duplicates we have
 		for keys, vals in dups.items():
+			#We need atleast 1 dup, so larger than 1
 			if len(vals) > 1:
 				#For each SET of duplicates, we display two columns.
 				#The first row says 'duplicates', the last is empty
 				#All the middle rows, second columns, the dups are displayed
 				for idx, each in enumerate(vals):
 					if idx == 0:
-						tuplelist.append(("Duplicates", "") )
+						size = self.getNiceSizeInBytes(os.stat(each).st_size)
+						tuplelist.append(("Duplicates", "Size: " + size) )
 					tuplelist.append(("", each))
 				tuplelist.append(("",""))
 					
@@ -182,6 +184,22 @@ class GuiCommands(object):
 			self.dupFileOutputMap[i] = index
 			self.mainGUI.dupFileOutput.SetStringItem(index, 1, i[1])
 					
+	def getNiceSizeInBytes(self, size):
+		if(size < 1000):
+			return str(round(size, 2)) + " Bytes (tiny)"
+		elif(size < 1000000):
+			return str(round(size/1000.0, 2)) + "KB (tiny)"
+		elif(size < 1000000000):
+			return str(round(size/1000000.0, 2)) + "MB (small)"
+		elif(size < 500000000000):
+			return str(round(size/1000000.0, 2)) + "MB (kinda big)"
+		elif(size < 1000000000000):
+			return str(size/1000000000.0) + "GB (large)"
+		elif(size < 1000000000000000):
+			return str(size/100000000000000.0 + "TB (HUGE)")
+		else:
+			return "(These things are huge)"
+	
 	
 	def refreshModelFileList(self):
 		#Go through a list of all the files we scanned, and make sure:
@@ -323,6 +341,7 @@ class LogRedirecter(object):
 		elif thetype == "CRITICAL":
 			self.printTo(self.critical, string)	
 		else:
+			sys.stderr.write("LOGGER ERROR")
 			sys.stderr.write(string)
 			
 	def printTo(self, outputMethod, string):

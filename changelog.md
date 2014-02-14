@@ -1,3 +1,13 @@
+##VERSION 0.2.0-pre-alpha
+
+    Added features!
+    
+    * DragAndDrop now works! Drag any file into Uniquity to scan it!
+    * Menu highlighting has been added! Buttons will highlight when they can be used, and will grey out when they can't.
+	* Duplicate file sizes are now shown!
+
+
+
 ##VERSION 0.1.1-pre-alpha
 
 Refactored some code, made slight improvements
