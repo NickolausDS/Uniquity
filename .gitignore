@@ -10,3 +10,4 @@ release/dist
 release/*.dmg
 release/*.app
 testing/test_files
+testing/testenv
