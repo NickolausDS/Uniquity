@@ -26,7 +26,7 @@ class GuiCommands(object):
 		self.DEPTH = 0 #Zero means no max self.DEPTH (go forever)
 		
 		#Set data
-		self.fileBank = uniquity.Uniquity()	
+		self.fileBank = None #uniquity.Uniquity()	
 		#List of files and dirs we will scan with uniquity	
 		self.scanObjects = []
 		self.fileMenuNew(None)
@@ -50,9 +50,10 @@ class GuiCommands(object):
 			# self.toolbarAddFiles(e)
 			return False
 			
-		
+		self.mainGUI.updateProgressBar(0.0, "Preparing Scan...")
 		self.fileBank.addFiles(files, self.MAXDIRDEPTH)
 		self.fileBank.start()
+		self.mainGUI.updateProgressBar(100.0, "Finished!")
 		self.fileBank.log.info("Finished.")
 		
 		self.refreshDuplicateFileOutput()
@@ -126,6 +127,8 @@ class GuiCommands(object):
 				
 		#Reset the logger
 		self.fileBank = uniquity.Uniquity()
+		self.fileBank.setUpdateCallback(self.updateViewProgress)
+		
 		
 		self.fileBank.log = logging.getLogger("main")
 		
@@ -223,6 +226,7 @@ class GuiCommands(object):
 			newSO = scanObject.scanObject(each)
 			self.scanObjects.append(newSO)
 			self.mainGUI.directoryListings.InsertStringItem(0, newSO.getFilename())
+
 	
 	#Remove files or directories from the list of scanObjects to scan with uniqutiy.		
 	def removeFiles(self, files):
@@ -295,6 +299,11 @@ class GuiCommands(object):
 			current = next
 		return selection
 		
+	def updateViewProgress(self, **kwargs):
+		theFile = kwargs.get('file', "")
+		percent = kwargs.get('percent', 0.0)
+		self.mainGUI.updateProgressBar(percent, theFile)	
+		
 	def getStatus(self):
 		pass
 		
@@ -341,22 +350,26 @@ class LogRedirecter(object):
 		elif thetype == "CRITICAL":
 			self.printTo(self.critical, string)	
 		else:
-			sys.stderr.write("LOGGER ERROR")
 			sys.stderr.write(string)
 			
 	def printTo(self, outputMethod, string):
 			if type(outputMethod) == list:
 				outputMethod.append(string)
-			if type(outputMethod) == file:
+			elif type(outputMethod) == file:
 				outputMethod.write(string)
-			if type(outputMethod) == type(lambda x: x):
+			elif type(outputMethod) == type(lambda x: x):
 				outputMethod(string)
+			elif outputMethod == sys.stderr:
+				outputMethod.write(string)
 			else:
 				raise LogRedirectionException("The logged message: '"+string+"' was passed to an invalidly set type.")
 				
-	class LogRedirectionException(Exception):
-		def __init__(self, message):
-			self.message = message
+class LogRedirectionException(Exception):
+	def __init__(self, message):
+		self.message = message
+		
+	def __str__(self):
+		return self.message
 	
 
 	

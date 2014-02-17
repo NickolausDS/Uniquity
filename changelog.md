@@ -5,6 +5,7 @@
     * DragAndDrop now works! Drag any file into Uniquity to scan it!
     * Menu highlighting has been added! Buttons will highlight when they can be used, and will grey out when they can't.
 	* Duplicate file sizes are now shown!
+	* Progress updates are now shown. No more wondering what Uniqutiy is doing in the background!
 
 
 

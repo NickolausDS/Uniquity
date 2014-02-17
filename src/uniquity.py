@@ -36,6 +36,10 @@ class Uniquity:
 		self.log.addHandler(self.logHandler)
 		self.log.setLevel(logging.INFO)
 		
+		self.progressPercentComplete = 0.0
+		self.progressFileComplete = None
+		self.updateCallbackFunction = None
+		
 	#Add files to be hashed. 
 	#Adding directories means adding all the files within it.
 	def addFiles(self, inputFiles, maxDirDepth=0):
@@ -90,6 +94,38 @@ class Uniquity:
 				dups.extend(each)
 		self.log.debug("Verifying duplicates...")
 		self.hashFiles(dups, self.secondPass, self.__strongHash)
+		self.updateProgress(100.0)
+
+	#Update our current progress completing the scan
+	def updateProgress(self, percent, currentFile=None):
+		self.progressPercentComplete= percent
+		if currentFile:
+			self.progressFileComplete= currentFile
+		if self.updateCallbackFunction:
+			try:
+				self.updateCallbackFunction(
+					percent=self.getProgressPercent(),
+					file=self.getProgressFile())
+			except Exception as e:
+				self.log.critical("Uniquity: Failed to call updateProgress() callback function: " + str(e))
+		
+	#If you want uniquity to update you on its progress after each scanned file, you can
+	#give it a function to call each time
+	#
+	#I understand this is a simple, butured version of the observer Dpattern. But as of now,
+	#I don't feel the need for it support more than one callback. You could refactor it into
+	#the more regular design pattern in the future, if you would like.	
+	def setUpdateCallback(self, funct):
+		self.updateCallbackFunction = funct
+		
+	def getProgressPercent(self):
+		return self.progressPercentComplete
+		
+	def getProgressFile(self):
+		if self.progressFileComplete:
+			return self.progressFileComplete
+		else:
+			return "None."
 
 	#Weak checksum to narrow down the mass of files chosen
 	def hashFiles(self, fileList, outputDict, hashFunct):
@@ -123,7 +159,15 @@ class Uniquity:
 			
 			#Compute percent completed
 			percent = float(idx) / float(len(self.fileListings) ) * 100
-			self.log.info("(%.1f%%) %s" %(percent, os.path.basename(fname) )) 
+			#I'll say it now, this is a hack. It should be taken care of in the refactor
+			#next week, but I'm really sorry if it didn't.
+			#
+			#Manually check if this is the second pass by checking if it has any files.
+			if len(self.secondPass) == 0:
+				self.updateProgress(percent/2.0, os.path.basename(fname))
+			else:
+				self.updateProgress(percent/2.0+50.0, os.path.basename(fname))
+			# self.log.info("(%.1f%%) %s" %(percent, os.path.basename(fname) )) 
 
 	
 	# #Strong hash, so we know for sure if it was a duplicate			
