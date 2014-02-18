@@ -131,6 +131,18 @@ class Uniquity:
 	def hashFiles(self, fileList, outputDict, hashFunct):
 		for idx, fname in enumerate(fileList):
 				
+			#Compute percent completed
+			percent = float(idx) / float(len(self.fileListings) ) * 100.0
+			#I'll say it now, this is a hack. It should be taken care of in the refactor
+			#next week, but I'm really sorry if it didn't.
+			#
+			#Manually check if this is the second pass by checking if it has any files.
+			if len(self.secondPass) == 0:
+				self.updateProgress(percent/2.0, fname)
+			else:
+				self.updateProgress(percent/2.0+50.0, fname)
+			# self.log.info("(%.1f%%) %s" %(percent, os.path.basename(fname) ))	
+				
 			#Skip large files
 			if(self.maxFileSize != 0):
 				#Remove large files
@@ -157,17 +169,6 @@ class Uniquity:
 			else:
 				outputDict[fileHash] = [fname]
 			
-			#Compute percent completed
-			percent = float(idx) / float(len(self.fileListings) ) * 100
-			#I'll say it now, this is a hack. It should be taken care of in the refactor
-			#next week, but I'm really sorry if it didn't.
-			#
-			#Manually check if this is the second pass by checking if it has any files.
-			if len(self.secondPass) == 0:
-				self.updateProgress(percent/2.0, os.path.basename(fname))
-			else:
-				self.updateProgress(percent/2.0+50.0, os.path.basename(fname))
-			# self.log.info("(%.1f%%) %s" %(percent, os.path.basename(fname) )) 
 
 	
 	# #Strong hash, so we know for sure if it was a duplicate			

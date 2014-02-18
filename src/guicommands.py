@@ -252,7 +252,7 @@ class GuiCommands(object):
 	#of the scanObject.
 	def getNiceDupName(self, dup):
 		for each in self.scanObjects:
-			if each.contains(dup):
+			if each.getFilename() in dup:
 				return dup.replace(each.getFilename(), each.getBasename())
 		
 		#This should oly happen if we're given bad data.
@@ -302,7 +302,7 @@ class GuiCommands(object):
 	def updateViewProgress(self, **kwargs):
 		theFile = kwargs.get('file', "")
 		percent = kwargs.get('percent', 0.0)
-		self.mainGUI.updateProgressBar(percent, theFile)	
+		self.mainGUI.updateProgressBar(percent, self.getNiceDupName(theFile))	
 		
 	def getStatus(self):
 		pass

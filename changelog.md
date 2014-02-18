@@ -7,6 +7,11 @@ Added features!
 * Duplicate file sizes are now shown!
 	* Also added subjective description to sizes for non-technical users
 * Progress updates are now shown. No more wondering what Uniqutiy is doing in the background!
+	* Only partial names shown in progress bar to avoid clutter
+
+Fixed
+
+* Bug with progress updater not showing the latest file being scanned
 
 
 
