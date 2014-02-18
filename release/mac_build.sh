@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# set up your app name, version number, and background image file name
+APP_NAME="Uniquity"
+VERSION=`grep "VERSION" ../changelog.md | head -n 1 | sed -e "s/##VERSION //g"`
+DMG_BACKGROUND_IMG="Background.png"
+
+#Set some things for the build process
+PYINSTALLER_SPEC_FILE="uniquity_gui.spec"
+PYINSALLER_OPTIONS="--windowed"
+
+
+###--- BUILD PROCESSS ---###
 pyinstaller &> /dev/null
 if [[ $? -eq 127 ]]
 then
@@ -14,11 +25,7 @@ then
 	echo "Ejected old Uniquity disk so we can build a new one."
 fi	
 #Clean the directory is it isn't clean	
-rm -rf build/ dist/ Uniquity.app/ *.dmg &> /dev/null
-
-
-PYINSTALLER_SPEC_FILE="uniquity_gui.spec"
-PYINSALLER_OPTIONS="--windowed"
+rm -rf build/ dist/ Uniquity.app/ "${APP_NAME} ${VERSION}.dmg" &> /dev/null
 
 pyinstaller ${PYINSTALLER_SPEC_FILE} ${PYINSTALLER_OPTIONS}
 if [[ $? -ne 0 ]]
@@ -34,7 +41,7 @@ fi
 mv dist/uniquity_gui.app ./Uniquity.app
 rm -rf build/ dist/
 
-
+###--- PACKAGING THE DMG ---###
 # by Andy Maloney
 # http://asmaloney.com/2013/07/howto/packaging-a-mac-os-x-application-using-a-dmg/
 
@@ -44,10 +51,6 @@ if [ -d "$dir" ]; then
   cd "$dir"
 fi
 
-# set up your app name, version number, and background image file name
-APP_NAME="Uniquity"
-VERSION=`grep "VERSION" ../changelog.md | head -n 1 | sed -e "s/##VERSION //g"`
-DMG_BACKGROUND_IMG="Background.png"
 
 # you should not need to change these
 APP_EXE="${APP_NAME}.app/Contents/MacOS/${APP_NAME}"
