@@ -1,5 +1,10 @@
 #!/usr/bin/python
-
+#
+# ATTENTION!!! As of Feb 18 2014 (later then v0.2.0) this will no longer
+# work. Refactors on Uniquity have rendered it obselete, and it will need
+# to be rebuilt in order to be used.
+# Please remove this message if you intend to rebuild the cli for uniquity
+#
 import sys
 import os
 import inspect

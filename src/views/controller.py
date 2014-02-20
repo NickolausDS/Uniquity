@@ -1,37 +1,35 @@
-import uniquity
+import models.uniquity as uniquity
 import wx
 import logging
 import os
 import sys
 import subprocess
 
-import scanObject
+import models.scanObject as scanObject
 
 # import thread
 
 from cStringIO import StringIO
 
 
-class GuiCommands(object):
+class Controller(object):
 	
 	def __init__(self, theMainWindow):
-		self.mainGUI = theMainWindow
+		self.mainView = theMainWindow
 		
 		#Set options (Consider using a dictionary)
-		self.MAXDIRDEPTH = 0
-		self.VERBOSITY = "NORMAL"
-		self.OUTPUTFORMAT = "LIST"
-		self.MAXFILESIZE = 0
-		self.HASHALG = "md5"
-		self.DEPTH = 0 #Zero means no max self.DEPTH (go forever)
+		# self.MAXDIRDEPTH = 0
+		# self.VERBOSITY = "NORMAL"
+		# self.OUTPUTFORMAT = "LIST"
+		# self.MAXFILESIZE = 0
+		# self.HASHALG = "md5"
+		# self.DEPTH = 0 #Zero means no max self.DEPTH (go forever)
 		
 		#Set data
-		self.fileBank = None #uniquity.Uniquity()	
+		self.uniquity = None #uniquity.Uniquity()	
 		#List of files and dirs we will scan with uniquity	
 		self.scanObjects = []
 		self.fileMenuNew(None)
-		# self.filesToScan = []
-		# self.filesScanned = []
 
 		self.dupFileOutputMap = {}
 
@@ -40,21 +38,21 @@ class GuiCommands(object):
 	def toolbarStart(self, e):
 		index = 0
 		files = []
-		while(index != self.mainGUI.directoryListings.GetItemCount() ):
-			files.append(self.mainGUI.directoryListings.GetItemText(index))
+		while(index != self.mainView.directoryListings.GetItemCount() ):
+			files.append(self.mainView.directoryListings.GetItemText(index))
 			index += 1
 		
-		# files = self.mainGUI.directoryListings.GetColumn(0)
+		# files = self.mainView.directoryListings.GetColumn(0)
 		# print "FILES>" + files
 		if not files:
 			# self.toolbarAddFiles(e)
 			return False
 			
-		self.mainGUI.updateProgressBar(0.0, "Preparing Scan...")
-		self.fileBank.addFiles(files, self.MAXDIRDEPTH)
-		self.fileBank.start()
-		self.mainGUI.updateProgressBar(100.0, "Finished!")
-		self.fileBank.log.info("Finished.")
+		self.mainView.updateProgressBar(0.0, "Preparing Scan...")
+		self.uniquity.addFiles(files, 0)
+		self.uniquity.start()
+		self.mainView.updateProgressBar(100.0, "Finished!")
+		self.uniquity.log.info("Finished.")
 		
 		self.refreshDuplicateFileOutput()
 		return True
@@ -62,35 +60,35 @@ class GuiCommands(object):
 	def toolbarAddFiles(self, e):
 		dirname = "."
 		""" Open a file"""
-		dlg = wx.DirDialog(self.mainGUI, "Choose a Directory", ".")
+		dlg = wx.DirDialog(self.mainView, "Choose a Directory", ".")
 		if dlg.ShowModal() == wx.ID_OK:
 			self.addFiles([dlg.GetPath()])
 		dlg.Destroy()
 				
 	def toolbarRemoveFile(self, e):
-		selection = self.getSelectedInListCtrl(self.mainGUI.directoryListings)
+		selection = self.getSelectedInListCtrl(self.mainView.directoryListings)
 		if not selection:
-			self.mainGUI.printStatusError("Select a file or directory to remove it")
+			self.mainView.printStatusError("Select a file or directory to remove it")
 		else:
 			self.removeFiles(selection)
 				
-		# selected = self.mainGUI.directoryListings.GetFocusedItem()
+		# selected = self.mainView.directoryListings.GetFocusedItem()
 		
 	def toolbarViewFile(self, e):
 		selected = self.getSelectedDups()
 		if not selected:
-			self.mainGUI.printStatusError("Select a file in the duplicate list to view it")
+			self.mainView.printStatusError("Select a file in the duplicate list to view it")
 		else:
 			#We only support opening one file at a time
 			selection = selected[0]
 			print "DEBUG: " + selection
-			# selection = self.mainGUI.dupFileOutput.GetItemText(selected[0], 1)
+			# selection = self.mainView.dupFileOutput.GetItemText(selected[0], 1)
 			if sys.platform == "win32":
 				os.startfile(selected[0])
 			elif sys.platform == "darwin":
 				subprocess.Popen(['open', '-R', selection])
 			else:
-				self.mainGUI.printStatusERror("I'm sorry, but this tool failed to work for your current platform")
+				self.mainView.printStatusERror("I'm sorry, but this tool failed to work for your current platform")
 		
 	def toolbarDeleteFile(self, e):
 		toDelete = self.getSelectedDups()
@@ -112,7 +110,7 @@ class GuiCommands(object):
 					except Exception as e:
 						self.setDupFileOutputBackgroundColor(theFile, "YELLOW")
 		else:
-			self.mainGUI.printStatusError("Select one or more duplicate files from the list to delete.")
+			self.mainView.printStatusError("Select one or more duplicate files from the list to delete.")
 		
 	def fileMenuNew(self, e):
 		#Set files to empty
@@ -120,27 +118,27 @@ class GuiCommands(object):
 		
 		#If the program is started up for the first time, this won't exist
 		try:
-			self.mainGUI.directoryListings.ClearAll()
-			self.mainGUI.mainSplitter.Unsplit(self.mainGUI.tabHolder)
+			self.mainView.directoryListings.ClearAll()
+			self.mainView.mainSplitter.Unsplit(self.mainView.tabHolder)
 		except AttributeError:
 			pass
 				
 		#Reset the logger
-		self.fileBank = uniquity.Uniquity()
-		self.fileBank.setUpdateCallback(self.updateViewProgress)
+		self.uniquity = uniquity.Uniquity()
+		self.uniquity.setUpdateCallback(self.updateViewProgress)
 		
 		
-		self.fileBank.log = logging.getLogger("main")
+		self.uniquity.log = logging.getLogger("main")
 		
-		self.fileBank.log.setLevel(logging.DEBUG)
+		self.uniquity.log.setLevel(logging.DEBUG)
 		self.log = LogRedirecter(None)
 		
 		self.logh = logging.StreamHandler(self.log)
 		self.logh.setFormatter(logging.Formatter("%(levelname)s:%(message)s"))
 		self.logh.setLevel(logging.DEBUG)
 		
-		self.fileBank.log.removeHandler(logging.StreamHandler())
-		self.fileBank.log.addHandler(self.logh)
+		self.uniquity.log.removeHandler(logging.StreamHandler())
+		self.uniquity.log.addHandler(self.logh)
 		
 		
 		
@@ -150,21 +148,21 @@ class GuiCommands(object):
 		# Create a message dialog box
 		message = "A program to find all of the duplicate files on your computer\n\n"
 		message += "A creation by Nickolaus Saint at \nWindward Productions"
-		dlg = wx.MessageDialog(self.mainGUI, message, "About Uniquity", wx.OK)
+		dlg = wx.MessageDialog(self.mainView, message, "About Uniquity", wx.OK)
 		dlg.ShowModal() # Shows it
 		dlg.Destroy() # finally destroy it when finished.
 
 	def fileMenuExit(self,e):
-	   self.mainGUI.Close(True)  # Close the frame.
+	   self.mainView.Close(True)  # Close the frame.
 	
 	def refreshDuplicateFileOutput(self):
-		#self.mainGUI.dupFileOutput.SetValue(self.fileBank.getPrettyOutput())
-		dups = self.fileBank.secondPass
-		# self.mainGUI.leftOutput.ClearAll()
-		self.mainGUI.dupFileOutput.ClearAll()
-		self.mainGUI.dupFileOutput.InsertColumn(0, "Header Column", width=100)
-		self.mainGUI.dupFileOutput.InsertColumn(1, "File Column", width=1000)
-		# print self.mainGUI.leftOutput.GetColumnCount()
+		#self.mainView.dupFileOutput.SetValue(self.uniquity.getPrettyOutput())
+		dups = self.uniquity.secondPass
+		# self.mainView.leftOutput.ClearAll()
+		self.mainView.dupFileOutput.ClearAll()
+		self.mainView.dupFileOutput.InsertColumn(0, "Header Column", width=100)
+		self.mainView.dupFileOutput.InsertColumn(1, "File Column", width=1000)
+		# print self.mainView.leftOutput.GetColumnCount()
 		# leftColStr = ""
 		tuplelist = []
 		#Go through ALL the duplicates we have
@@ -183,9 +181,9 @@ class GuiCommands(object):
 					
 		# print str(tuplelist)
 		for i in tuplelist:
-			index = self.mainGUI.dupFileOutput.InsertStringItem(sys.maxint, i[0])
+			index = self.mainView.dupFileOutput.InsertStringItem(sys.maxint, i[0])
 			self.dupFileOutputMap[i] = index
-			self.mainGUI.dupFileOutput.SetStringItem(index, 1, i[1])
+			self.mainView.dupFileOutput.SetStringItem(index, 1, i[1])
 					
 	def getNiceSizeInBytes(self, size):
 		if(size < 1000):
@@ -215,7 +213,7 @@ class GuiCommands(object):
 					return True
 			return False
 					
-		for eachList in self.fileBank.secondPass.values():
+		for eachList in self.uniquity.secondPass.values():
 			for eachFile in eachList:
 				if not fileInMasterList(eachFile) or not os.path.exists(eachFile):
 					eachList.remove(eachFile)
@@ -225,14 +223,14 @@ class GuiCommands(object):
 		for each in files:
 			newSO = scanObject.scanObject(each)
 			self.scanObjects.append(newSO)
-			self.mainGUI.directoryListings.InsertStringItem(0, newSO.getFilename())
+			self.mainView.directoryListings.InsertStringItem(0, newSO.getFilename())
 
 	
 	#Remove files or directories from the list of scanObjects to scan with uniqutiy.		
 	def removeFiles(self, files):
 		for each in files:
 			newSO = scanObject.scanObject(each)
-			self.mainGUI.directoryListings.DeleteItem(newSO.getFilename())
+			self.mainView.directoryListings.DeleteItem(newSO.getFilename())
 			self.scanObjects.remove(newSO)
 			
 		
@@ -243,7 +241,7 @@ class GuiCommands(object):
 	def setDupFileOutputBackgroundColor(self, string, wxcolor):
 		itemID = self.dupFileOutputMap.get(('', unicode(string)), -1)
 		if itemID != -1:
-			self.mainGUI.dupFileOutput.SetItemBackgroundColour(itemID, wxcolor)
+			self.mainView.dupFileOutput.SetItemBackgroundColour(itemID, wxcolor)
 		else:
 			raise Exception("Failed to set LC color, no item named " + str(string) + " Exists.")
 	
@@ -269,14 +267,14 @@ class GuiCommands(object):
 	#Note: filenames are in unicode
 	def getSelectedDups(self):
 		selectedFiles = []
-		selected = self.getSelectedInListCtrl(self.mainGUI.dupFileOutput)
+		selected = self.getSelectedInListCtrl(self.mainView.dupFileOutput)
 		if not selected:
 			#return the empty list, nothing was selected
 			return selectedFiles
 		else:
 			for aFile in selected:
 				#The text is always a path
-				filePath = self.mainGUI.dupFileOutput.GetItemText(aFile, 1)
+				filePath = self.mainView.dupFileOutput.GetItemText(aFile, 1)
 				#Ignore empty space or rows that say "Duplicate"
 				if filePath == "" or "Duplicate" in filePath:
 					continue
@@ -291,7 +289,7 @@ class GuiCommands(object):
 		# start at -1 to get the first selected item
 		current = -1
 		while True:
-			# next = self.mainGUI.directoryListings.GetNextSelected(listctrl, current)
+			# next = self.mainView.directoryListings.GetNextSelected(listctrl, current)
 			next = listctrl.GetNextSelected(current)
 			if next == -1:
 				break
@@ -302,7 +300,7 @@ class GuiCommands(object):
 	def updateViewProgress(self, **kwargs):
 		theFile = kwargs.get('file', "")
 		percent = kwargs.get('percent', 0.0)
-		self.mainGUI.updateProgressBar(percent, self.getNiceDupName(theFile))	
+		self.mainView.updateProgressBar(percent, self.getNiceDupName(theFile))	
 		
 	def getStatus(self):
 		pass

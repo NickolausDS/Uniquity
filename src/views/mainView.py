@@ -6,17 +6,9 @@ import sys
 import time
 import threading
 
-import guicommands
+import controller
 
-
-if getattr(sys, 'frozen', False):
-    # we are running in a |PyInstaller| bundle
-    BASEPATH = sys._MEIPASS
-else:
-    # we are running in a normal Python environment
-    BASEPATH = os.path.dirname(__file__)
-
-IMAGE_DIR=os.path.join(BASEPATH, "assets" + os.path.sep)
+from data.config import *
 
 
 class MainWindow(wx.Frame):
@@ -27,11 +19,11 @@ class MainWindow(wx.Frame):
 		# In this case, we select 200px width and the default height.
 		wx.Frame.__init__(self, parent, title=title, size=(800,600))
 
-		self.command = guicommands.GuiCommands(self)
+		self.controller = controller.Controller(self)
 
 		#setup drag and drop. It fires when someone drags a file onto the main window
 		#and calls the method "addFiles"
-		self.dt = DragAndDrop(self, self.command.addFiles)
+		self.dt = DragAndDrop(self, self.controller.addFiles)
 		self.SetDropTarget(self.dt)
 
 		self.mainSplitter = wx.SplitterWindow(self, -1, style=wx.SP_3DSASH, size=(300,300))
@@ -78,9 +70,9 @@ class MainWindow(wx.Frame):
 		
 		#Put all errors on this pane
 		method = lambda string: self.filesSkippedOutput.AppendText(string)
-		self.command.log.warning = method
-		self.command.log.error = method
-		self.command.log.critical = method
+		self.controller.log.warning = method
+		self.controller.log.error = method
+		self.controller.log.critical = method
 
 		##PUT MAIN GUI TOGETHER
 		self.mainSplitter.SplitVertically(self.directoryPanel, self.tabHolder)
@@ -99,8 +91,8 @@ class MainWindow(wx.Frame):
 		self.progressSizer = wx.BoxSizer(wx.VERTICAL)
 		
 		# method = lambda string: self.progressInfo.SetLabelText(string)
-		# self.command.log.debug = method
-		# self.command.log.info = method
+		# self.controller.log.debug = method
+		# self.controller.log.info = method
 		
 		self.progressSizer.Add(self.progressCompletion, 0, wx.EXPAND | wx.ALL, 10)
 		self.progressSizer.Add(self.progressGauge, 0, wx.EXPAND | wx.ALL, 10)
@@ -122,8 +114,8 @@ class MainWindow(wx.Frame):
 		#STATUS BAR
 		self.statusBar = self.CreateStatusBar() # A Statusbar in the bottom of the window
 		# method = lambda text: self.statusBar.SetStatusText(text)
-		# self.command.log.debug = method
-		# self.command.log.info = method
+		# self.controller.log.debug = method
+		# self.controller.log.info = method
 		self.statusBar.SetStatusText("Welcome to the Uniquity File Scanner!")
 		
 		
@@ -156,11 +148,11 @@ class MainWindow(wx.Frame):
 		self.SetMenuBar(menuBar)  # Adding the MenuBar to the Frame content.
 
 		# Events.
-		# self.Bind(wx.EVT_MENU, self.command.fileMenuOpen, menuOpen)
-		self.Bind(wx.EVT_MENU, self.command.fileMenuNew, menuNew)
-		# self.Bind(wx.EVT_MENU, self.command.toolbarMenuAdd, menuAdd)
-		self.Bind(wx.EVT_MENU, self.command.fileMenuExit, menuExit)
-		self.Bind(wx.EVT_MENU, self.command.fileMenuAbout, menuAbout)
+		# self.Bind(wx.EVT_MENU, self.controller.fileMenuOpen, menuOpen)
+		self.Bind(wx.EVT_MENU, self.controller.fileMenuNew, menuNew)
+		# self.Bind(wx.EVT_MENU, self.controller.toolbarMenuAdd, menuAdd)
+		self.Bind(wx.EVT_MENU, self.controller.fileMenuExit, menuExit)
+		self.Bind(wx.EVT_MENU, self.controller.fileMenuAbout, menuAbout)
 		
 
 	def setupToolbar(self):
@@ -193,15 +185,15 @@ class MainWindow(wx.Frame):
 
 		#Bind all the methods to the toolbar buttons
 		self.Bind(wx.EVT_TOOL, self.startScanning, start)
-		self.Bind(wx.EVT_TOOL, self.command.toolbarAddFiles, addFile)
+		self.Bind(wx.EVT_TOOL, self.controller.toolbarAddFiles, addFile)
 		
-		self.Bind(wx.EVT_TOOL, self.command.toolbarRemoveFile, removeFile)
-		self.Bind(wx.EVT_TOOL, self.command.toolbarViewFile, viewFile)
-		self.Bind(wx.EVT_TOOL, self.command.toolbarDeleteFile, deleteFile)
+		self.Bind(wx.EVT_TOOL, self.controller.toolbarRemoveFile, removeFile)
+		self.Bind(wx.EVT_TOOL, self.controller.toolbarViewFile, viewFile)
+		self.Bind(wx.EVT_TOOL, self.controller.toolbarDeleteFile, deleteFile)
 		
 		
 	def startScanning(self, e):
-		if self.command.toolbarStart(e):
+		if self.controller.toolbarStart(e):
 			self.mainSplitter.SplitVertically(self.directoryPanel, self.tabHolder)
 		else:
 			self.printStatusError("Add files in order to start scanning")
@@ -235,7 +227,7 @@ class MainWindow(wx.Frame):
 		self.toolbar.EnableTool(wx.ID_REMOVE, False)
 
 	def enableDupFileTools(self, e):
-		if self.command.getSelectedDups():
+		if self.controller.getSelectedDups():
 			self.toolbar.EnableTool(wx.ID_VIEW_DETAILS, True)
 			self.toolbar.EnableTool(wx.ID_DELETE, True)
 		
