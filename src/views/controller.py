@@ -36,18 +36,14 @@ class Controller(object):
 
 	#TOOLBAR MENU EVENTS
 	def toolbarStart(self, e):
-		index = 0
+		#We shouldn't need this bit when we're done with the refactor.
+		#Just hand the scan objects stragiht to Uniqutiy
 		files = []
-		while(index != self.mainView.directoryListings.GetItemCount() ):
-			files.append(self.mainView.directoryListings.GetItemText(index))
-			index += 1
-		
-		# files = self.mainView.directoryListings.GetColumn(0)
-		# print "FILES>" + files
+		for each in self.scanObjects:
+			files.append(each.getFilename())
 		if not files:
-			# self.toolbarAddFiles(e)
 			return False
-			
+		
 		self.mainView.updateProgressBar(0.0, "Preparing Scan...")
 		self.uniquity.addFiles(files, 0)
 		self.uniquity.start()
@@ -66,7 +62,7 @@ class Controller(object):
 		dlg.Destroy()
 				
 	def toolbarRemoveFile(self, e):
-		selection = self.getSelectedInListCtrl(self.mainView.directoryListings)
+		selection = self.mainView.directoryView.getSelected()
 		if not selection:
 			self.mainView.printStatusError("Select a file or directory to remove it")
 		else:
@@ -221,18 +217,31 @@ class Controller(object):
 	#Add new files or directories to scan with uniquity
 	def addFiles(self, files):
 		for each in files:
-			newSO = scanObject.scanObject(each)
-			self.scanObjects.append(newSO)
-			self.mainView.directoryListings.InsertStringItem(0, newSO.getFilename())
+			#Check if the user already added this file
+			error = False
+			for sos in self.scanObjects:
+				if sos.getFilename() == each:
+					self.mainView.printStatusError("Filename '" + each + "' already added!")
+					error = True
+					break
+			if error == False:
+				newSO = scanObject.scanObject(each)
+				self.scanObjects.append(newSO)
+				self.mainView.printStatus("Added '" + newSO.getFilename() + "'.")
+		self.mainView.directoryView.updatePanel()
 
 	
 	#Remove files or directories from the list of scanObjects to scan with uniqutiy.		
 	def removeFiles(self, files):
 		for each in files:
-			newSO = scanObject.scanObject(each)
-			self.mainView.directoryListings.DeleteItem(newSO.getFilename())
-			self.scanObjects.remove(newSO)
-			
+			for so in self.scanObjects:
+				if each == so.getFilename():
+					self.scanObjects.remove(so)
+					self.mainView.printStatus("Removed '" + each + "'.")
+		self.mainView.directoryView.updatePanel()
+		
+		# self.mainView.directoryView.removeFiles(self.scanObjects) #.DeleteItem(newSO.getFilename())
+		
 		
 	#
 	def updateFiles(self):

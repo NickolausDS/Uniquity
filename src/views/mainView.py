@@ -9,7 +9,7 @@ import threading
 import controller
 
 from data.config import *
-
+from directoryView import DirectoryView
 
 class MainWindow(wx.Frame):
 	def __init__(self, parent, title):
@@ -33,19 +33,7 @@ class MainWindow(wx.Frame):
 		self.setupToolbar()
 		# self.setupDirectoryPanel(mainSplitter)
 
-		#SETUP DIRECTORY PANEL
-		self.directoryPanel = wx.Panel(self.mainSplitter)
-		self.directoryPanelSizer = wx.BoxSizer(wx.VERTICAL)
-		#self.directoryListings = wx.TextCtrl(self.directoryPanel, style=wx.TE_MULTILINE|wx.TE_READONLY)
-		#self.lc1 = wx.ListCtrl(splitter2, -1, style=wx.LC_LIST)
-		self.directoryListings = wx.ListCtrl(self.directoryPanel, -1, style=wx.LC_LIST)
-		self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableRemoveTool, self.directoryListings)
-		self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableRemoveTool, self.directoryListings)
-		title = wx.StaticText(self.directoryPanel, label='Files')
-		self.directoryPanelSizer.Add(title, 0, wx.ALIGN_CENTER|wx.BOTTOM)
-		self.directoryPanelSizer.Add(self.directoryListings, 100, border=10, flag= wx.EXPAND|wx.ALL|wx.ALIGN_TOP)
-		self.directoryPanel.SetSizer(self.directoryPanelSizer)
-		
+		self.directoryView = DirectoryView(self.mainSplitter, self.controller.scanObjects, self.toolbar)
 		#self.setupTabbedOutputDisplay(mainSplitter)
 		
 		#SETUP TABBED OUTPUT DISPLAY
@@ -73,15 +61,15 @@ class MainWindow(wx.Frame):
 		self.controller.log.warning = method
 		self.controller.log.error = method
 		self.controller.log.critical = method
-
+		
 		##PUT MAIN GUI TOGETHER
-		self.mainSplitter.SplitVertically(self.directoryPanel, self.tabHolder)
+		self.mainSplitter.SplitVertically(self.directoryView, self.tabHolder)
 		#SetMinimumPaneSize stops the splitter from being closed by the user
 		self.mainSplitter.SetMinimumPaneSize(20)
 		#Combine the top (toolbar) and bottom (everything else) into the master
 		#We will re-split the toolbar when we have dup files to show the user
 		self.mainSplitter.Unsplit(self.tabHolder)
-
+		
 		self.progressPanel = wx.Panel(self)
 		self.progressGauge = wx.Gauge(self.progressPanel, -1, 100, size=(250,25))
 		self.progressCompletion = wx.StaticText(self.progressPanel, label="Progress Completion:")
@@ -99,7 +87,7 @@ class MainWindow(wx.Frame):
 		self.progressSizer.Add(self.progressInfo, 0, wx.EXPAND | wx.ALL, 10)
 		self.progressPanel.SetSizer(self.progressSizer)
 		# self.progressPanel.SetBackgroundColour('#4f5049')
-        
+		        
 
 		self.masterSizer = wx.BoxSizer(wx.VERTICAL)
 		paddingPanel = wx.Panel(self, size=(0,20))
@@ -194,9 +182,13 @@ class MainWindow(wx.Frame):
 		
 	def startScanning(self, e):
 		if self.controller.toolbarStart(e):
-			self.mainSplitter.SplitVertically(self.directoryPanel, self.tabHolder)
+			self.mainSplitter.SplitVertically(self.directoryView, self.tabHolder)
 		else:
 			self.printStatusError("Add files in order to start scanning")
+
+	def printStatus(self, text):
+		self.statusBar.SetStatusText(text)
+		self.statusBar.Refresh()
 
 	def printStatusError(self, error):
 		class ResetStatusBarTimer(threading.Thread):
@@ -219,12 +211,6 @@ class MainWindow(wx.Frame):
 		
 	def OnQuit(self, e):
 		self.Close()
-		
-	def enableRemoveTool(self, e):
-		self.toolbar.EnableTool(wx.ID_REMOVE, True)
-
-	def disableRemoveTool(self, e):
-		self.toolbar.EnableTool(wx.ID_REMOVE, False)
 
 	def enableDupFileTools(self, e):
 		if self.controller.getSelectedDups():
