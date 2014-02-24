@@ -26,12 +26,33 @@ class Controller(object):
 		# self.DEPTH = 0 #Zero means no max self.DEPTH (go forever)
 		
 		#Set data
-		self.uniquity = None #uniquity.Uniquity()	
+		self.uniquity = None #uniquity.Uniquity()
+		self.setupLogging()	
 		#List of files and dirs we will scan with uniquity	
 		self.scanObjects = []
-		self.fileMenuNew(None)
+		#self.fileMenuNew(None)
 
 		self.dupFileOutputMap = {}
+
+
+	#Kept as of 2/24/2014 for compatibility
+	def setupLogging(self):
+		#Reset the logger
+		self.uniquity = uniquity.Uniquity()
+		self.uniquity.setUpdateCallback(self.updateViewProgress)
+
+
+		self.uniquity.log = logging.getLogger("main")
+
+		self.uniquity.log.setLevel(logging.DEBUG)
+		self.log = LogRedirecter(None)
+
+		self.logh = logging.StreamHandler(self.log)
+		self.logh.setFormatter(logging.Formatter("%(levelname)s:%(message)s"))
+		self.logh.setLevel(logging.DEBUG)
+
+		self.uniquity.log.removeHandler(logging.StreamHandler())
+		self.uniquity.log.addHandler(self.logh)
 
 
 	#TOOLBAR MENU EVENTS
@@ -107,49 +128,6 @@ class Controller(object):
 						self.setDupFileOutputBackgroundColor(theFile, "YELLOW")
 		else:
 			self.mainView.printStatusError("Select one or more duplicate files from the list to delete.")
-		
-	def fileMenuNew(self, e):
-		#Set files to empty
-		self.files = []
-		
-		#If the program is started up for the first time, this won't exist
-		try:
-			self.mainView.directoryListings.ClearAll()
-			self.mainView.mainSplitter.Unsplit(self.mainView.tabHolder)
-		except AttributeError:
-			pass
-				
-		#Reset the logger
-		self.uniquity = uniquity.Uniquity()
-		self.uniquity.setUpdateCallback(self.updateViewProgress)
-		
-		
-		self.uniquity.log = logging.getLogger("main")
-		
-		self.uniquity.log.setLevel(logging.DEBUG)
-		self.log = LogRedirecter(None)
-		
-		self.logh = logging.StreamHandler(self.log)
-		self.logh.setFormatter(logging.Formatter("%(levelname)s:%(message)s"))
-		self.logh.setLevel(logging.DEBUG)
-		
-		self.uniquity.log.removeHandler(logging.StreamHandler())
-		self.uniquity.log.addHandler(self.logh)
-		
-		
-		
-		
-
-	def fileMenuAbout(self,e):
-		# Create a message dialog box
-		message = "A program to find all of the duplicate files on your computer\n\n"
-		message += "A creation by Nickolaus Saint at \nWindward Productions"
-		dlg = wx.MessageDialog(self.mainView, message, "About Uniquity", wx.OK)
-		dlg.ShowModal() # Shows it
-		dlg.Destroy() # finally destroy it when finished.
-
-	def fileMenuExit(self,e):
-	   self.mainView.Close(True)  # Close the frame.
 	
 	def refreshDuplicateFileOutput(self):
 		#self.mainView.dupFileOutput.SetValue(self.uniquity.getPrettyOutput())

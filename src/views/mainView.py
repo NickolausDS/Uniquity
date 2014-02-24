@@ -10,6 +10,7 @@ import controller
 
 from data.config import *
 from directoryView import DirectoryView
+from fileMenu import FileMenu
 
 class MainWindow(wx.Frame):
 	def __init__(self, parent, title):
@@ -29,7 +30,8 @@ class MainWindow(wx.Frame):
 		self.mainSplitter = wx.SplitterWindow(self, -1, style=wx.SP_3DSASH, size=(300,300))
 
 		#All the setup, spread out into several methods
-		self.setupFileMenu()	
+		# self.setupFileMenu()	
+		self.fileMenu = FileMenu(self)
 		self.setupToolbar()
 		# self.setupDirectoryPanel(mainSplitter)
 
@@ -106,41 +108,9 @@ class MainWindow(wx.Frame):
 		# self.controller.log.info = method
 		self.statusBar.SetStatusText("Welcome to the Uniquity File Scanner!")
 		
-		
-	
-	
 	def setupFileMenu(self):
 		# Setting up the menu.
-		filemenu= wx.Menu()
-		#menuOpen = filemenu.Append(wx.ID_OPEN, "&Open"," Open a file to edit")
-		menuNew = filemenu.Append(wx.ID_NEW, "&New", "Empty the current list of scanned files and start again")
-		# menuAdd = filemenu.Append(wx.ID_ADD, "Add", "Add a new directory")
-		menuAbout= filemenu.Append(wx.ID_ABOUT, "&About"," Information about this program")
-		menuExit = filemenu.Append(wx.ID_EXIT,"E&xit"," Terminate the program")
-		
-		editMenu = wx.Menu()
-		editMenu.Append(wx.ID_PASTE, "&Paste", "Paste a file path to be scanned")
-		
-		viewMenu = wx.Menu()
-		viewMenu.Append(wx.ID_ANY, "Show Hash", "Show the resulting hash for each duplicate file displayed")
-		
-		helpMenu = wx.Menu()
-		helpMenu.Append(wx.ID_ANY, "Quick Help", "A very simple quick start guide for using Uniquity")
-
-		# Creating the menubar.
-		menuBar = wx.MenuBar()
-		menuBar.Append(filemenu,"&File") # Adding the "filemenu" to the MenuBar
-		# menuBar.Append(editMenu,"Edit")
-		# menuBar.Append(viewMenu,"View")
-		menuBar.Append(helpMenu,"Help")
-		self.SetMenuBar(menuBar)  # Adding the MenuBar to the Frame content.
-
-		# Events.
-		# self.Bind(wx.EVT_MENU, self.controller.fileMenuOpen, menuOpen)
-		self.Bind(wx.EVT_MENU, self.controller.fileMenuNew, menuNew)
-		# self.Bind(wx.EVT_MENU, self.controller.toolbarMenuAdd, menuAdd)
-		self.Bind(wx.EVT_MENU, self.controller.fileMenuExit, menuExit)
-		self.Bind(wx.EVT_MENU, self.controller.fileMenuAbout, menuAbout)
+		pass
 		
 
 	def setupToolbar(self):
