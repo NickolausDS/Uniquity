@@ -1,3 +1,5 @@
+##VERSION 0.3.0-alpha
+
 ##VERSION 0.2.0-alpha
 
 Added features!
