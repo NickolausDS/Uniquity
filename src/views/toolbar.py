@@ -20,18 +20,16 @@ class Toolbar(wx.ToolBar):
 		#about to load. We want to keep that from happening. Delete noLog after adding menu items
 		noLog = wx.LogNull()
 
-
-		start = self.AddLabelTool(wx.ID_ANY, 'Start', wx.Bitmap(IMAGE_DIR+'start_icon.png'))
-		self.Bind(wx.EVT_TOOL, self.startf, start)
+		start = self.AddLabelTool(wx.ID_ANY, 'Start', self.__loadImage('start_icon.png'))
 		self.AddSeparator()
 
-		addFile = self.AddLabelTool(wx.ID_ADD, 'Add File', wx.Bitmap(IMAGE_DIR+'add_icon.png'))
-		removeFile = self.AddLabelTool(wx.ID_REMOVE, 'Remove File', wx.Bitmap(IMAGE_DIR+'remove_icon.png'))
+		addFile = self.AddLabelTool(wx.ID_ADD, 'Add File', self.__loadImage('add_icon.png'))
+		removeFile = self.AddLabelTool(wx.ID_REMOVE, 'Remove File', self.__loadImage('remove_icon.png'))
 		self.EnableTool(wx.ID_REMOVE, False)
 		self.AddSeparator()
-
-		viewFile = self.AddLabelTool(wx.ID_VIEW_DETAILS, 'View File', wx.Bitmap(IMAGE_DIR+'view_icon.png'))
-		deleteFile = self.AddLabelTool(wx.ID_DELETE, 'Delete File', wx.Bitmap(IMAGE_DIR+'delete_icon.png'))
+		
+		viewFile = self.AddLabelTool(wx.ID_VIEW_DETAILS, 'View File', self.__loadImage('view_icon.png'))
+		deleteFile = self.AddLabelTool(wx.ID_DELETE, 'Delete File', self.__loadImage('delete_icon.png'))
 		#We will disable both tools until we can use them
 		self.EnableTool(wx.ID_VIEW_DETAILS, False)
 		self.EnableTool(wx.ID_DELETE, False)
@@ -43,8 +41,8 @@ class Toolbar(wx.ToolBar):
 		del noLog
 
 		# Bind all the methods to the toolbar buttons
+		self.Bind(wx.EVT_TOOL, self.startf, start)
 		self.Bind(wx.EVT_TOOL, self.addFiles , addFile)
-
 		self.Bind(wx.EVT_TOOL, self.removeFiles, removeFile)
 		self.Bind(wx.EVT_TOOL, self.viewFiles, viewFile)
 		self.Bind(wx.EVT_TOOL, self.deleteFiles, deleteFile)
@@ -99,5 +97,11 @@ class Toolbar(wx.ToolBar):
 		else:
 			self.parent.printStatusError("Select one or more duplicate files from the list to delete.")
 
-		
+	def __loadImage(self, filename):
+		fullpath = os.path.join(IMAGE_DIR, filename)
+		#wxPython will throw a terrible tissy fit if it tries to load a file that doesn't exist.
+		if not os.path.exists(fullpath):
+			raise ValueError("Failed to load image %s!" % fullpath)
+		return wx.Bitmap(fullpath)
+
 		
