@@ -3,7 +3,6 @@ import wx
 import logging
 import os
 import sys
-import subprocess
 
 import models.scanObject as scanObject
 
@@ -53,81 +52,6 @@ class Controller(object):
 
 		self.uniquity.log.removeHandler(logging.StreamHandler())
 		self.uniquity.log.addHandler(self.logh)
-
-
-	#TOOLBAR MENU EVENTS
-	def toolbarStart(self, e):
-		#We shouldn't need this bit when we're done with the refactor.
-		#Just hand the scan objects stragiht to Uniqutiy
-		files = []
-		for each in self.scanObjects:
-			files.append(each.getFilename())
-		if not files:
-			return False
-		
-		self.mainView.updateProgressBar(0.0, "Preparing Scan...")
-		self.uniquity.addFiles(files, 0)
-		self.uniquity.start()
-		self.mainView.updateProgressBar(100.0, "Finished!")
-		self.uniquity.log.info("Finished.")
-		
-		self.refreshDuplicateFileOutput()
-		return True
-		
-	def toolbarAddFiles(self, e):
-		dirname = "."
-		""" Open a file"""
-		dlg = wx.DirDialog(self.mainView, "Choose a Directory", ".")
-		if dlg.ShowModal() == wx.ID_OK:
-			self.addFiles([dlg.GetPath()])
-		dlg.Destroy()
-				
-	def toolbarRemoveFile(self, e):
-		selection = self.mainView.directoryView.getSelected()
-		if not selection:
-			self.mainView.printStatusError("Select a file or directory to remove it")
-		else:
-			self.removeFiles(selection)
-				
-		# selected = self.mainView.directoryListings.GetFocusedItem()
-		
-	def toolbarViewFile(self, e):
-		selected = self.getSelectedDups()
-		if not selected:
-			self.mainView.printStatusError("Select a file in the duplicate list to view it")
-		else:
-			#We only support opening one file at a time
-			selection = selected[0]
-			print "DEBUG: " + selection
-			# selection = self.mainView.dupFileOutput.GetItemText(selected[0], 1)
-			if sys.platform == "win32":
-				os.startfile(selected[0])
-			elif sys.platform == "darwin":
-				subprocess.Popen(['open', '-R', selection])
-			else:
-				self.mainView.printStatusERror("I'm sorry, but this tool failed to work for your current platform")
-		
-	def toolbarDeleteFile(self, e):
-		toDelete = self.getSelectedDups()
-		if toDelete:
-			message = "Are you sure you want to delete these files:\n"
-			message += "\n".join(self.getNiceDupNames(toDelete))
-			title = "They will never bother you again."
-			askDialog = wx.MessageDialog(None, 
-										title, 
-										message, 
-										style=wx.YES_NO | wx.NO_DEFAULT | wx.ICON_EXCLAMATION)
-			result = askDialog.ShowModal()
-			askDialog.Destroy()	
-			if result == wx.ID_YES:
-				for theFile in toDelete:
-					try:
-						os.remove(theFile)
-						self.setDupFileOutputBackgroundColor(theFile, "RED")
-					except Exception as e:
-						self.setDupFileOutputBackgroundColor(theFile, "YELLOW")
-		else:
-			self.mainView.printStatusError("Select one or more duplicate files from the list to delete.")
 	
 	def refreshDuplicateFileOutput(self):
 		#self.mainView.dupFileOutput.SetValue(self.uniquity.getPrettyOutput())
@@ -191,6 +115,22 @@ class Controller(object):
 			for eachFile in eachList:
 				if not fileInMasterList(eachFile) or not os.path.exists(eachFile):
 					eachList.remove(eachFile)
+	
+	def start(self):		
+		#We shouldn't need this bit when we're done with the refactor.
+		#Just hand the scan objects stragiht to Uniqutiy
+		files = []
+		for each in self.scanObjects:
+			files.append(each.getFilename())
+		if not files:
+			return False
+
+		self.mainView.updateProgressBar(0.0, "Preparing Scan...")
+		self.uniquity.addFiles(files, 0)
+		self.uniquity.start()
+		self.uniquity.log.info("Finished.")
+		return True
+
 	
 	#Add new files or directories to scan with uniquity
 	def addFiles(self, files):

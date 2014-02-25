@@ -11,6 +11,7 @@ import controller
 from data.config import *
 from directoryView import DirectoryView
 from fileMenu import FileMenu
+from toolbar import Toolbar
 
 class MainWindow(wx.Frame):
 	def __init__(self, parent, title):
@@ -32,7 +33,8 @@ class MainWindow(wx.Frame):
 		#All the setup, spread out into several methods
 		# self.setupFileMenu()	
 		self.fileMenu = FileMenu(self)
-		self.setupToolbar()
+		# self.setupToolbar()
+		self.toolbar = Toolbar(self, self.controller)
 		# self.setupDirectoryPanel(mainSplitter)
 
 		self.directoryView = DirectoryView(self.mainSplitter, self.controller.scanObjects, self.toolbar)
@@ -108,53 +110,35 @@ class MainWindow(wx.Frame):
 		# self.controller.log.info = method
 		self.statusBar.SetStatusText("Welcome to the Uniquity File Scanner!")
 		
-	def setupFileMenu(self):
-		# Setting up the menu.
-		pass
-		
+### COMMON METHODS ###
+#These methods, start, addFiles, and RemoveFiles, are both used by the fileMenu and the
+#Toolbar. Since neither object really *owns* the functionality, they are left here.
 
-	def setupToolbar(self):
-		self.toolbar = self.CreateToolBar()
-		#We add noLog in order to suspend wxlogging for a short time.
-		#The reason is that it now gives a bogus error to the end user about the pngs we are
-		#about to load. We want to keep that from happening. Delete noLog after adding menu items
-		noLog = wx.LogNull()
-		
-		
-		start = self.toolbar.AddLabelTool(wx.ID_ANY, 'Start', wx.Bitmap(IMAGE_DIR+'start_icon.png'))
-		self.toolbar.AddSeparator()
-		addFile = self.toolbar.AddLabelTool(wx.ID_ADD, 'Add File', wx.Bitmap(IMAGE_DIR+'add_icon.png'))
-		removeFile = self.toolbar.AddLabelTool(wx.ID_REMOVE, 'Remove File', wx.Bitmap(IMAGE_DIR+'remove_icon.png'))
-		self.toolbar.EnableTool(wx.ID_REMOVE, False)
-		
-		
-		self.toolbar.AddSeparator()
-		viewFile = self.toolbar.AddLabelTool(wx.ID_VIEW_DETAILS, 'View File', wx.Bitmap(IMAGE_DIR+'view_icon.png'))
-		deleteFile = self.toolbar.AddLabelTool(wx.ID_DELETE, 'Delete File', wx.Bitmap(IMAGE_DIR+'delete_icon.png'))
-		#We will disable both tools until we can use them
-		self.toolbar.EnableTool(wx.ID_VIEW_DETAILS, False)
-		self.toolbar.EnableTool(wx.ID_DELETE, False)
-		
-		#show the toolbar
-		self.toolbar.Realize()
-		
-		#re-enable logging
-		del noLog
-
-		#Bind all the methods to the toolbar buttons
-		self.Bind(wx.EVT_TOOL, self.startScanning, start)
-		self.Bind(wx.EVT_TOOL, self.controller.toolbarAddFiles, addFile)
-		
-		self.Bind(wx.EVT_TOOL, self.controller.toolbarRemoveFile, removeFile)
-		self.Bind(wx.EVT_TOOL, self.controller.toolbarViewFile, viewFile)
-		self.Bind(wx.EVT_TOOL, self.controller.toolbarDeleteFile, deleteFile)
-		
-		
-	def startScanning(self, e):
-		if self.controller.toolbarStart(e):
+	def start(self):
+		self.updateProgressBar(0.0, "Preparing Scan...")
+		if self.controller.start():
 			self.mainSplitter.SplitVertically(self.directoryView, self.tabHolder)
+			self.updateProgressBar(100.0, "Finished!")
 		else:
 			self.printStatusError("Add files in order to start scanning")
+
+		self.controller.refreshDuplicateFileOutput()
+		return True
+
+	def addFiles(self):
+		dirname = "."
+		""" Open a file"""
+		dlg = wx.DirDialog(self, "Choose a Directory", ".")
+		if dlg.ShowModal() == wx.ID_OK:
+			self.controller.addFiles([dlg.GetPath()])
+		dlg.Destroy()
+
+	def removeFiles(self):
+		selection = self.directoryView.getSelected()
+		if not selection:
+			self.mainView.printStatusError("Select a file or directory to remove it")
+		else:
+			self.controller.removeFiles(selection)
 
 	def printStatus(self, text):
 		self.statusBar.SetStatusText(text)
@@ -182,6 +166,8 @@ class MainWindow(wx.Frame):
 	def OnQuit(self, e):
 		self.Close()
 
+	#These should be moved to the toolbar object
+	#They will once the dup flie view gets refactored
 	def enableDupFileTools(self, e):
 		if self.controller.getSelectedDups():
 			self.toolbar.EnableTool(wx.ID_VIEW_DETAILS, True)
@@ -214,5 +200,8 @@ class DragAndDrop(wx.FileDropTarget):
 	def OnDropFiles(self, x, y, filenames):
 		#Yep, that's literally all we do.
 		self.callbackFunct(filenames)
+		#So, when the drop happens, we get a list of filenames. We call
+		#the callback function with the list of filenames, which *should*
+		#be the addFiles() method in the controller.
 
 				
