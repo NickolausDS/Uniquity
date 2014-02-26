@@ -20,7 +20,6 @@ class MainWindow(wx.Frame):
 		# A "-1" in the size parameter instructs wxWidgets to use the default size.
 		# In this case, we select 200px width and the default height.
 		wx.Frame.__init__(self, parent, title=title, size=(800,600))
-
 		self.controller = controller.Controller(self)
 
 		#setup drag and drop. It fires when someone drags a file onto the main window
@@ -28,17 +27,11 @@ class MainWindow(wx.Frame):
 		self.dt = DragAndDrop(self, self.controller.addFiles)
 		self.SetDropTarget(self.dt)
 
-		self.mainSplitter = wx.SplitterWindow(self, -1, style=wx.SP_3DSASH, size=(300,300))
-
-		#All the setup, spread out into several methods
-		# self.setupFileMenu()	
+		#Our main view objects
 		self.fileMenu = FileMenu(self)
-		# self.setupToolbar()
 		self.toolbar = Toolbar(self, self.controller)
-		# self.setupDirectoryPanel(mainSplitter)
-
 		self.directoryView = DirectoryView(self.mainSplitter, self.controller.scanObjects, self.toolbar)
-		#self.setupTabbedOutputDisplay(mainSplitter)
+		self.mainSplitter = wx.SplitterWindow(self, -1, style=wx.SP_3DSASH, size=(300,300))
 		
 		#SETUP TABBED OUTPUT DISPLAY
 		self.tabHolder = wx.Notebook(self.mainSplitter, -1, style=(wx.NB_TOP))
@@ -82,10 +75,6 @@ class MainWindow(wx.Frame):
 		self.progressInfo = wx.StaticText(self.progressPanel, label="File: ")
 		self.progressSizer = wx.BoxSizer(wx.VERTICAL)
 		
-		# method = lambda string: self.progressInfo.SetLabelText(string)
-		# self.controller.log.debug = method
-		# self.controller.log.info = method
-		
 		self.progressSizer.Add(self.progressCompletion, 0, wx.EXPAND | wx.ALL, 10)
 		self.progressSizer.Add(self.progressGauge, 0, wx.EXPAND | wx.ALL, 10)
 		self.progressSizer.Add(self.progressInfo, 0, wx.EXPAND | wx.ALL, 10)
@@ -105,9 +94,6 @@ class MainWindow(wx.Frame):
 		
 		#STATUS BAR
 		self.statusBar = self.CreateStatusBar() # A Statusbar in the bottom of the window
-		# method = lambda text: self.statusBar.SetStatusText(text)
-		# self.controller.log.debug = method
-		# self.controller.log.info = method
 		self.statusBar.SetStatusText("Welcome to the Uniquity File Scanner!")
 		
 ### COMMON METHODS ###

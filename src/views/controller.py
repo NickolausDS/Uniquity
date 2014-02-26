@@ -29,7 +29,6 @@ class Controller(object):
 		self.setupLogging()	
 		#List of files and dirs we will scan with uniquity	
 		self.scanObjects = []
-		#self.fileMenuNew(None)
 
 		self.dupFileOutputMap = {}
 
@@ -157,13 +156,6 @@ class Controller(object):
 					self.scanObjects.remove(so)
 					self.mainView.printStatus("Removed '" + each + "'.")
 		self.mainView.directoryView.updatePanel()
-		
-		# self.mainView.directoryView.removeFiles(self.scanObjects) #.DeleteItem(newSO.getFilename())
-		
-		
-	#
-	def updateFiles(self):
-		pass
 	
 	def setDupFileOutputBackgroundColor(self, string, wxcolor):
 		itemID = self.dupFileOutputMap.get(('', unicode(string)), -1)
@@ -227,27 +219,7 @@ class Controller(object):
 	def updateViewProgress(self, **kwargs):
 		theFile = kwargs.get('file', "")
 		percent = kwargs.get('percent', 0.0)
-		self.mainView.updateProgressBar(percent, self.getNiceDupName(theFile))	
-		
-	def getStatus(self):
-		pass
-		
-
-# class ProgressUpdater(threading.Thread):
-# 
-# class GUIWorkerQueue(threading.Thread):
-# 	def __init__(self):
-# 		#init thread
-# 		
-# 	def run(self):
-# 		toScan = [files if files not in self.filesScanned for files in self.filesToScan]
-# 		for each in toScan:
-# 			
-# 		#While there are still files in filesToScan
-# 			#Start the progress updater
-# 			#Scan a directory
-		
-		
+		self.mainView.updateProgressBar(percent, self.getNiceDupName(theFile))		
 		
 class LogRedirecter(object):	
 	def __init__(self, newLocation):
