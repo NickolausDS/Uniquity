@@ -1,5 +1,5 @@
 # -*- mode: python -*-
-a = Analysis(['../src/uniquity_gui.py'],
+a = Analysis(['../src/Uniquity.py'],
              pathex=['/Users/goodcat/projects/uniquity/release'],
              hiddenimports=[],
              hookspath=None,
@@ -10,7 +10,7 @@ pyz = PYZ(a.pure)
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
-          name='uniquity_gui',
+          name='Uniquity',
           debug=False,
           strip=None,
           upx=True,
@@ -22,8 +22,8 @@ coll = COLLECT(exe,
                a.datas,
                strip=None,
                upx=True,
-               name='uniquity_gui')
+               name='Uniquity')
 app = BUNDLE(coll,
-             name='uniquity_gui.app',
+             name='Uniquity.app',
              debug=True,
 	     icon=None)

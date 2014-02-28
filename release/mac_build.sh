@@ -6,7 +6,7 @@ VERSION=`grep "VERSION" ../changelog.md | head -n 1 | sed -e "s/##VERSION //g"`
 DMG_BACKGROUND_IMG="Background.png"
 
 #Set some things for the build process
-PYINSTALLER_SPEC_FILE="uniquity_gui.spec"
+PYINSTALLER_SPEC_FILE="Uniquity.spec"
 PYINSALLER_OPTIONS="--windowed"
 
 
@@ -38,7 +38,7 @@ else
 	echo "Now Packaging for release..."
 fi
 
-mv dist/uniquity_gui.app ./Uniquity.app
+mv dist/Uniquity.app ./Uniquity.app
 rm -rf build/ dist/
 
 ###--- PACKAGING THE DMG ---###
