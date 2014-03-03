@@ -30,11 +30,13 @@ class MainWindow(wx.Frame):
 		#Our main view objects
 		self.fileMenu = FileMenu(self)
 		self.toolbar = Toolbar(self, self.controller)
-		self.directoryView = DirectoryView(self.mainSplitter, self.controller.scanObjects, self.toolbar)
+		
 		self.mainSplitter = wx.SplitterWindow(self, -1, style=wx.SP_3DSASH, size=(300,300))
+		self.directoryView = DirectoryView(self.mainSplitter, self.controller.scanObjects, self.toolbar)
+		self.tabHolder = wx.Notebook(self.mainSplitter, -1, style=(wx.NB_TOP))
+
 		
 		#SETUP TABBED OUTPUT DISPLAY
-		self.tabHolder = wx.Notebook(self.mainSplitter, -1, style=(wx.NB_TOP))
 		
 		# font = wx.SystemSettings_GetFont(wx.SYS_SYSTEM_FONT)
 		# font.SetPointSize(12)
