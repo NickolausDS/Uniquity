@@ -17,9 +17,10 @@ sys.path.insert(0, os.path.abspath(BASEPATH))
 # sys.path.insert(0, IMAGE_DIR)
 
 
+import data.config
+import models.logger
 import models.uniquity
 import views.mainView
-import data.config
 
 
 app = wx.App(False)
