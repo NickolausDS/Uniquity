@@ -103,10 +103,10 @@ class MainWindow(wx.Frame):
 #Toolbar. Since neither object really *owns* the functionality, they are left here.
 
 	def start(self):
-		self.updateProgressBar(0.0, "Preparing Scan...")
+		# self.updateProgressBar(0.0, "Preparing Scan...")
 		if self.controller.start():
 			self.mainSplitter.SplitVertically(self.directoryView, self.tabHolder)
-			self.updateProgressBar(100.0, "Finished!")
+			# self.updateProgressBar(100.0, "Finished!")
 		else:
 			self.printStatusError("Add files in order to start scanning")
 
@@ -166,11 +166,11 @@ class MainWindow(wx.Frame):
 		self.toolbar.EnableTool(wx.ID_DELETE, False)
 		
 	
-	def updateProgressBar(self, percent, currentFile=None):
-		self.progressGauge.SetValue(percent)
+	def updateProgressBar(self, currentFile):
+		# self.progressGauge.SetValue(percent)
 		# if currentFile:
-		print currentFile
-		self.progressInfo.SetLabel("File: " + currentFile)
+		# print currentFile
+		self.progressInfo.SetLabel("File: " + str(currentFile))
 		self.progressInfo.Update()
 		# self.progressSizer.Layout()
 

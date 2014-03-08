@@ -1,5 +1,25 @@
 ##VERSION 0.3.0-alpha
 
+Added features
+
+* Added concurrency, meaning large scans no longer tie up the GUI
+* Optimized the scanner by a magnitude of 10 at least. Scans are MUCH faster, and
+large scans are now possible
+* Verified files now show up immediately when they are found.
+* The progress indicator now shows the amount of files scanned, as well as the amount of bytes
+
+
+Fixed
+
+* Bug with scanning files with special characters in their filenames
+* Refactored lots of model code, making future updates and add-ons faster to develop
+
+Changed
+
+* Disabled the Progress bar for now, since the scanner is now too fast for it to make any sense.
+
+
+
 ##VERSION 0.2.0-alpha
 
 Added features!

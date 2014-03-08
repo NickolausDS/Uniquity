@@ -1,35 +1,62 @@
 import os
+import scanParent
 
-
-#An object we will scan with uniquity, either a file, or directory
-class scanObject(object):
+#A file, derived under a scanParent
+class ScanObject(scanParent.ScanParent):
 	
 	def __init__(self, filename):
-		self.filename = filename
-		self.hasScanned = False
+		scanParent.ScanParent.__init__(self,filename)
+		self.stat = os.stat(filename)
 		
-	def __str__(self):
-		return str(self.filename)
+		self._weakHash = ""
+		self._weakHashFunction = None
+		self._strongHash = ""
+		self._strongHashFunction = None
 		
-	def __unicode__(self):
-		return unicode(self.filename)
-		
-	def getFilename(self):
-		return self.filename
-		
-	def getBasename(self):
-		return os.path.basename(self.filename)
-		
-	def contains(self, filename):
-		if self.filename in filename:
+	def __eq__(self, other):
+		if super.__eq__(other):
 			return True
+		elif self.weakHashFunction != other.weakHashFunction:
+			raise ValueError("Attempted to compare '%s' and '%s' with differing hash algorithms '%s' and '%s'."
+				% (self, other, self.weakHashFunction, other.weakHashFunction))
+		elif self.strongHashFunction != other.strongHashFunction:
+			raise ValueError("Attempted to compare '%s' and '%s' with differing hash algorithms '%s' and '%s'."
+				% (self, other, self.strongHashFunction, other.strongHashFunction))	
 		else:
-			return False
+			if self.weakHash and other.weakHash and self.weakHash == other.weakHash:
+				if self.strongHash and other.strongHash and self.strongHash == other.strongHash:
+					return True
+		return False
+
 		
-	#Set if the directory has been scanned
-	def setHasScanned(self, boolean_status):
-		self.hasScanned = boolean_status
+	def getSize(self):
+		return self.stat.st_size
+
+	@property
+	def hashes(self):
+		return (self.weakHash, self.strongHash)
+
+	@property
+	def strongHash(self):
+		return self._strongHash	
+	
+	@property
+	def strongHashFunction(self):
+		return self._strongHashFunction
 		
-	#Returns true if the file or directory has been scanned		
-	def hasScanned(self):
-		return self.hasScanned
+	# @strongHash.setter
+	def setStrongHash(self, strongHash, strongHashFunction):
+		self._strongHash = strongHash
+		self._strongHashFunction = repr(strongHashFunction)
+
+	@property
+	def weakHash(self):
+		return self._weakHash
+	
+	@property	
+	def weakHashFunction(self):
+		return self._weakHashFunction
+		
+	def setWeakHash(self, weakHash, weakHashFunction):
+		self._weakHash = weakHash
+		self._weakHashFunction = repr(weakHashFunction)

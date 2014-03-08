@@ -52,9 +52,19 @@ class Controller(object):
 		self.uniquity.log.removeHandler(logging.StreamHandler())
 		self.uniquity.log.addHandler(self.logh)
 	
-	def refreshDuplicateFileOutput(self):
+	def refreshDuplicateFileOutput(self, dupDict=None):
+		if not dupDict:
+			return
+		
+		#This is a hack as to avoid rewriting this method. Hopefully it is refactored so
+		#You won't ever see this message. I hope...
+		dups = {}
+		for keys, vals in dupDict.items():
+			newkey = keys[0]
+			newval = [v.filename for v in vals]
+			dups[newkey] = newval
 		#self.mainView.dupFileOutput.SetValue(self.uniquity.getPrettyOutput())
-		dups = self.uniquity.secondPass
+		# dups = self.uniquity.secondPass
 		# self.mainView.leftOutput.ClearAll()
 		self.mainView.dupFileOutput.ClearAll()
 		self.mainView.dupFileOutput.InsertColumn(0, "Header Column", width=100)
@@ -124,11 +134,13 @@ class Controller(object):
 		if not files:
 			return False
 
-		self.mainView.updateProgressBar(0.0, "Preparing Scan...")
-		self.uniquity.addFiles(files, 0)
+		# self.mainView.updateProgressBar(0.0, "Preparing Scan...")
+		self.uniquity.addFiles(files)
 		self.uniquity.start()
 		self.uniquity.log.info("Finished.")
 		return True
+		
+		
 
 	
 	#Add new files or directories to scan with uniquity
@@ -142,7 +154,7 @@ class Controller(object):
 					error = True
 					break
 			if error == False:
-				newSO = scanObject.scanObject(each)
+				newSO = scanObject.ScanObject(each)
 				self.scanObjects.append(newSO)
 				self.mainView.printStatus("Added '" + newSO.getFilename() + "'.")
 		self.mainView.directoryView.updatePanel()
@@ -216,10 +228,13 @@ class Controller(object):
 			current = next
 		return selection
 		
-	def updateViewProgress(self, **kwargs):
-		theFile = kwargs.get('file', "")
-		percent = kwargs.get('percent', 0.0)
-		self.mainView.updateProgressBar(percent, self.getNiceDupName(theFile))		
+	def updateViewProgress(self, args):
+		theFile = args.get('file', "")
+		wx.CallAfter(self.mainView.updateProgressBar, str(theFile) )
+		wx.CallAfter(self.refreshDuplicateFileOutput, args.get('dupDict', None))
+		# theFile = kwargs.get('file', "")
+		# percent = kwargs.get('percent', 0.0)
+		# self.mainView.updateProgressBar(percent, self.getNiceDupName(theFile))		
 		
 class LogRedirecter(object):	
 	def __init__(self, newLocation):
