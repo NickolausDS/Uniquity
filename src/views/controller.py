@@ -5,6 +5,7 @@ import os
 import sys
 
 import models.scanObject as scanObject
+import data.config as config
 
 # import thread
 
@@ -25,32 +26,14 @@ class Controller(object):
 		# self.DEPTH = 0 #Zero means no max self.DEPTH (go forever)
 		
 		#Set data
-		self.uniquity = None #uniquity.Uniquity()
-		self.setupLogging()	
+		self.uniquity = uniquity.Uniquity()
+		self.uniquity.setUpdateCallback(self.updateViewProgress)
+		self.log = logging.getLogger('.'.join((config.GUI_LOG_NAME, 'controller')))
 		#List of files and dirs we will scan with uniquity	
 		self.scanObjects = []
 
 		self.dupFileOutputMap = {}
 
-
-	#Kept as of 2/24/2014 for compatibility
-	def setupLogging(self):
-		#Reset the logger
-		self.uniquity = uniquity.Uniquity()
-		self.uniquity.setUpdateCallback(self.updateViewProgress)
-
-
-		self.uniquity.log = logging.getLogger("main")
-
-		self.uniquity.log.setLevel(logging.DEBUG)
-		self.log = LogRedirecter(None)
-
-		self.logh = logging.StreamHandler(self.log)
-		self.logh.setFormatter(logging.Formatter("%(levelname)s:%(message)s"))
-		self.logh.setLevel(logging.DEBUG)
-
-		self.uniquity.log.removeHandler(logging.StreamHandler())
-		self.uniquity.log.addHandler(self.logh)
 	
 	def refreshDuplicateFileOutput(self, dupDict=None):
 		if not dupDict:
@@ -235,53 +218,3 @@ class Controller(object):
 		# theFile = kwargs.get('file', "")
 		# percent = kwargs.get('percent', 0.0)
 		# self.mainView.updateProgressBar(percent, self.getNiceDupName(theFile))		
-		
-class LogRedirecter(object):	
-	def __init__(self, newLocation):
-		if not newLocation:
-			newLocation = sys.stderr
-		self.debug = newLocation
-		self.info = newLocation
-		self.warning = newLocation
-		self.error = newLocation
-		self.critical = newLocation
-		
-	def write(self, thelog):
-		string = thelog.split(":")
-		thetype = string.pop(0)
-		string = ":".join(string)
-
-		if thetype == "DEBUG":
-			self.printTo(self.debug, string)
-		elif thetype == "INFO":
-			self.printTo(self.info, string)
-		elif thetype == "WARNING":
-			self.printTo(self.warning, string)
-		elif thetype == "ERROR":
-			self.printTo(self.error, string)
-		elif thetype == "CRITICAL":
-			self.printTo(self.critical, string)	
-		else:
-			sys.stderr.write(string)
-			
-	def printTo(self, outputMethod, string):
-			if type(outputMethod) == list:
-				outputMethod.append(string)
-			elif type(outputMethod) == file:
-				outputMethod.write(string)
-			elif type(outputMethod) == type(lambda x: x):
-				outputMethod(string)
-			elif outputMethod == sys.stderr:
-				outputMethod.write(string)
-			else:
-				raise LogRedirectionException("The logged message: '"+string+"' was passed to an invalidly set type.")
-				
-class LogRedirectionException(Exception):
-	def __init__(self, message):
-		self.message = message
-		
-	def __str__(self):
-		return self.message
-	
-
-	
