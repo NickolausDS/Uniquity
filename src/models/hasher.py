@@ -7,7 +7,8 @@ import hashlib
 
 import data.config as config
 
-
+#KNOWN BUG: When a user shuts down uniquity DURING a run, the hasher
+# fails to shutdown.
 class Hasher(threading.Thread):
 	def __init__(self, hashQueue, verifiedFiles, updateCallback):
 		threading.Thread.__init__(self)
@@ -74,7 +75,7 @@ class Hasher(threading.Thread):
 				self.log.exception(e)
 				
 			if self.__shouldShutdown():
-				self.log.debug("Shutting down...")
+				self.log.info("Shutting down...")
 				break
 
 

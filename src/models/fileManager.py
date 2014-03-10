@@ -43,7 +43,7 @@ class FileManager(threading.Thread):
 				self.log.exception(e)
 				
 			if self.__shouldShutdown():
-				self.log.debug("Shutting down...")
+				self.log.info("Shutting down...")
 				break
 
 	#Scan a parent file
