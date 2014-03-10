@@ -22,6 +22,7 @@ class MainWindow(wx.Frame):
 		# In this case, we select 200px width and the default height.
 		wx.Frame.__init__(self, parent, title=title, size=(800,600))
 		self.controller = controller.Controller(self)
+		self.Bind(wx.EVT_CLOSE, self.OnClose)
 
 		#setup drag and drop. It fires when someone drags a file onto the main window
 		#and calls the method "addFiles"
@@ -139,8 +140,12 @@ class MainWindow(wx.Frame):
 		sbr = ResetStatusBarTimer(1500, self.statusBar)
 		sbr.start()
 		
-	def OnQuit(self, e):
-		self.Close()
+	def OnClose(self, e):
+		#We could have an 'are you sure' dialogue here if we wanted.
+		self.controller.shutdown()
+		self.Destroy()
+
+		
 
 	#These should be moved to the toolbar object
 	#They will once the dup flie view gets refactored

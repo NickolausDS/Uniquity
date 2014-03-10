@@ -123,7 +123,8 @@ class Controller(object):
 		self.uniquity.log.info("Finished.")
 		return True
 		
-		
+	def shutdown(self):
+		self.uniquity.shutdown()
 
 	
 	#Add new files or directories to scan with uniquity
