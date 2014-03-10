@@ -2,7 +2,7 @@ import data.config as config
 import logging
 
 # create logger
-main = logging.getLogger('Uniquity')
+main = logging.getLogger(config.MAIN_LOG_NAME)
 main.setLevel(config.MAIN_LOG_LEVEL)
 
 formatter = logging.Formatter(config.CONSOLE_FORMAT)
