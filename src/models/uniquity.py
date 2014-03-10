@@ -11,6 +11,7 @@ import fileManager
 import hasher
 import scanObject
 import scanParent
+import data.config as config
 
 ##TODO: The file listings can get very large, possibly > 500 mb. We might consider storing this in
 #A temporary file, or by using mapped memory (which is kinda the same thing)
@@ -41,13 +42,9 @@ class Uniquity:
 		# self.strongHasher = hashlib.sha512 #hashlib has classes
 		
 		#Logging
-		self.log = logging.getLogger("main")
-		self.logHandler = logging.StreamHandler()
+		# self.log = logging.getLogger(config.MAIN_LOG_NAME)
+		self.log = logging.getLogger('.'.join((config.MAIN_LOG_NAME, 'Main')))
 		
-		self.logHandler.setFormatter(logging.Formatter("%(message)s"))
-		self.logHandler.setLevel(logging.DEBUG)
-		self.log.addHandler(self.logHandler)
-		self.log.setLevel(logging.INFO)
 		
 		
 		self.progress = {}
@@ -71,12 +68,22 @@ class Uniquity:
 
 
 	def shutdown(self):
-		#wait on the queue until everything has been processed
-		self.fileManager.shutdown()
-		self.hasher.shutdown()
-		self.log.Debug("Waiting for services to shutdown.")
-		self.fileQueue.join()
-		# self.hashQueue.join()
+		#shutdown both threads. 
+		if self.fileManager.isAlive():
+			self.fileManager.shutdown()
+			self.fileManager.join(config.SHUTDOWN_MAX_WAIT)
+			if self.fileManager.isAlive():
+				self.log.critical("File manager failed to shutdown!")
+		else:
+			self.log.warning("Called for fileManager shutdown but fileManager is not running!")
+		
+		if self.hasher.isAlive():
+			self.hasher.shutdown()
+			self.hasher.join(config.SHUTDOWN_MAX_WAIT)
+			if self.hasher.isAlive():
+				self.log.critical("Hasher failed to shutdown!")
+		else:
+			self.log.warning("Called for hasher to shutdown, but hasher is not running!")
 	
 		
 	def addFiles(self, inputFiles):
