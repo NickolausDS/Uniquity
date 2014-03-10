@@ -12,6 +12,7 @@ from data.config import *
 from directoryView import DirectoryView
 from fileMenu import FileMenu
 from toolbar import Toolbar
+import updatePanel
 
 class MainWindow(wx.Frame):
 	def __init__(self, parent, title):
@@ -30,11 +31,12 @@ class MainWindow(wx.Frame):
 		#Our main view objects
 		self.fileMenu = FileMenu(self)
 		self.toolbar = Toolbar(self, self.controller)
+		self.updatePanel = updatePanel.UpdatePanel(self)
+		
 		
 		self.mainSplitter = wx.SplitterWindow(self, -1, style=wx.SP_3DSASH, size=(300,300))
 		self.directoryView = DirectoryView(self.mainSplitter, self.controller.scanObjects, self.toolbar)
 		self.tabHolder = wx.Notebook(self.mainSplitter, -1, style=(wx.NB_TOP))
-
 		
 		#SETUP TABBED OUTPUT DISPLAY
 		
@@ -67,28 +69,14 @@ class MainWindow(wx.Frame):
 		self.mainSplitter.SetMinimumPaneSize(20)
 		#Combine the top (toolbar) and bottom (everything else) into the master
 		#We will re-split the toolbar when we have dup files to show the user
-		self.mainSplitter.Unsplit(self.tabHolder)
-		
-		self.progressPanel = wx.Panel(self)
-		self.progressGauge = wx.Gauge(self.progressPanel, -1, 100, size=(250,25))
-		self.progressCompletion = wx.StaticText(self.progressPanel, label="Progress Completion:")
-		# We should probably change this to textctrl later
-		# self.progressInfo = wx.TextCtrl(self.progressPanel, -1, style=wx.TE_READONLY | wx.BORDER_NONE)
-		self.progressInfo = wx.StaticText(self.progressPanel, label="File: ")
-		self.progressSizer = wx.BoxSizer(wx.VERTICAL)
-		
-		self.progressSizer.Add(self.progressCompletion, 0, wx.EXPAND | wx.ALL, 10)
-		self.progressSizer.Add(self.progressGauge, 0, wx.EXPAND | wx.ALL, 10)
-		self.progressSizer.Add(self.progressInfo, 0, wx.EXPAND | wx.ALL, 10)
-		self.progressPanel.SetSizer(self.progressSizer)
-		# self.progressPanel.SetBackgroundColour('#4f5049')
-		        
+		self.mainSplitter.Unsplit(self.tabHolder)		        
 
 		self.masterSizer = wx.BoxSizer(wx.VERTICAL)
 		paddingPanel = wx.Panel(self, size=(0,20))
 		self.masterSizer.Add(paddingPanel, 0)
 		self.masterSizer.Add(self.mainSplitter, 1, wx.EXPAND)
-		self.masterSizer.Add(self.progressPanel, 0, wx.EXPAND | wx.ALL)
+		self.masterSizer.Add(self.updatePanel, 0, wx.EXPAND | wx.ALL)
+		# self.masterSizer.Add(self.progressPanel, 0, wx.EXPAND | wx.ALL)
 		# #Layout sizers
 		self.SetSizer(self.masterSizer)
 		self.SetAutoLayout(1)
@@ -164,15 +152,6 @@ class MainWindow(wx.Frame):
 	def disableDupFileTools(self, e):
 		self.toolbar.EnableTool(wx.ID_VIEW_DETAILS, False)
 		self.toolbar.EnableTool(wx.ID_DELETE, False)
-		
-	
-	def updateProgressBar(self, currentFile):
-		# self.progressGauge.SetValue(percent)
-		# if currentFile:
-		# print currentFile
-		self.progressInfo.SetLabel("File: " + str(currentFile))
-		self.progressInfo.Update()
-		# self.progressSizer.Layout()
 
 class ResizingListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
 	def __init__(self, parent):

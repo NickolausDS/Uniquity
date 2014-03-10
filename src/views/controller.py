@@ -230,7 +230,7 @@ class Controller(object):
 		
 	def updateViewProgress(self, args):
 		theFile = args.get('file', "")
-		wx.CallAfter(self.mainView.updateProgressBar, str(theFile) )
+		wx.CallAfter(self.mainView.updatePanel.updateProgress, str(theFile) )
 		wx.CallAfter(self.refreshDuplicateFileOutput, args.get('dupDict', None))
 		# theFile = kwargs.get('file', "")
 		# percent = kwargs.get('percent', 0.0)
