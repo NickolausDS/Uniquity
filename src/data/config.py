@@ -10,6 +10,8 @@ IMAGE_DIR=os.path.join(os.getcwd(), "assets/")
 #Low values: create unnessesary load on the CPU
 #High values: create lag time and unresponsiveness to the user
 UPDATE_INTERVAL = 0.1
+#Time in seconds we wait for all threads to terminate before we terminate anyway
+SHUTDOWN_MAX_WAIT = 1.0
 
 WEAK_HASH = "crc32"
 STRONG_HASH = "md5"
