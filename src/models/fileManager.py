@@ -23,13 +23,19 @@ class FileManager(threading.Thread):
 		self.lastUpdateTime = time.time()
 
 		#STATS
-		self.totalSize = 0
-		self.filesScanned = 0
+		self.stats = {}
+		self.stats['files'] = self.files
+		self.stats['filesScanned'] = 0
+		self.stats['sizeScanned'] = 0
+		self.stats['currentScanFile'] = None
+		self.stats['scannerStatus'] = "idle"
+		self.stats['possibleDuplicates'] = 0
 
 	def run(self):
 		while True:
 			
 			try:
+				
 				#grabs host from fileQueue
 				nextScanParent = self.fileQueue.get(True, self.UPDATE_INTERVAL)
 				self.log.debug("Beginning scan: %s", nextScanParent.getFilename())
@@ -38,7 +44,7 @@ class FileManager(threading.Thread):
 				self.__update(True)
 				self.log.debug("Finished scanning: %s.", nextScanParent.getFilename())
 			except Queue.Empty:
-				pass
+				self.stats['scannerStatus'] = "idle"
 			except Exception as e:
 				self.log.exception(e)
 				
@@ -48,10 +54,12 @@ class FileManager(threading.Thread):
 
 	#Scan a parent file
 	def __scan(self, scanParent):
+		self.stats['scannerStatus'] = 'running'
 		for root, dirs, files in os.walk(scanParent.getFilename()):
 			for filename in files:
 				try:
 					newso = scanObject.ScanObject(os.path.join(root,filename))
+					self.stats['currentScanFile'] = newso.getBasename()
 					#Add to the dictionary indexed by size
 					self.__addFile(newso)
 				except OSError as ose:
@@ -63,7 +71,8 @@ class FileManager(threading.Thread):
 					return
 				else:
 					self.__update()
-				# self.log.debug(self.files)
+		self.stats['currentScanFile'] = None
+		
 		
 	#Returns true if it should shutdwon		
 	def __shouldShutdown(self):
@@ -78,8 +87,7 @@ class FileManager(threading.Thread):
 		if time.time() - self.lastUpdateTime > self.UPDATE_INTERVAL or forcedUpdate:
 			self.lastUpdateTime = time.time()
 			self.log.debug("Progress Update!")
-			progress = {'file': "Total files: %s, Total Size %d" % (self.filesScanned, self.totalSize)}
-			self.updateCallback(progress)
+			self.updateCallback(self.stats)
 			
 	def __addFile(self, newso):
 		fileSize = newso.getSize()
@@ -101,6 +109,6 @@ class FileManager(threading.Thread):
 			# self.hashQueue.put(newso)
 			for each in record:
 				self.hashQueue.put(each)
-		self.totalSize += fileSize
-		self.filesScanned += 1
+		self.stats['sizeScanned'] += fileSize
+		self.stats['filesScanned'] += 1
 		

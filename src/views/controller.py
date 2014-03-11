@@ -213,9 +213,9 @@ class Controller(object):
 		return selection
 		
 	def updateViewProgress(self, args):
-		theFile = args.get('file', "")
-		wx.CallAfter(self.mainView.updatePanel.updateProgress, str(theFile) )
-		wx.CallAfter(self.refreshDuplicateFileOutput, args.get('dupDict', None))
+		
+		wx.CallAfter(self.mainView.updatePanel.updateProgress, args )
+		wx.CallAfter(self.refreshDuplicateFileOutput, args.get('hashedFiles', None))
 		# theFile = kwargs.get('file', "")
 		# percent = kwargs.get('percent', 0.0)
 		# self.mainView.updateProgressBar(percent, self.getNiceDupName(theFile))		

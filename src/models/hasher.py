@@ -28,12 +28,11 @@ class Hasher(threading.Thread):
 		
 		#Used for counting stats
 		self.stats = {}
-		self.totalSize = 0
-		self.totalVerifiedFiles = 0
-		self.currentFile = ""
-		self.currentSizeHashed = 0
 		self.stats['filesHashed'] = 0
-		self.stats['totalHashSize'] = 0
+		self.stats['sizeHashed'] = 0
+		self.stats['currentHashFile'] = None
+		self.stats['hasherStatus'] = "idle"
+		self.stats['hashedFiles'] = verifiedFiles
 		
 	
 	@property
@@ -65,12 +64,13 @@ class Hasher(threading.Thread):
 			try:
 				#grabs host from fileQueue
 				nextSO = self.hashQueue.get(True, self.UPDATE_INTERVAL)
+				self.stats['hasherStatus'] = 'running'
 				self.log.info("Verifying File: %s", nextSO.getFilename())
 				self.hash(nextSO)
 				self.hashQueue.task_done()
 				self.__update(True)
 			except Queue.Empty:
-				pass
+				self.stats['hasherStatus'] = 'idle'
 			except Exception as e:
 				self.log.exception(e)
 				
@@ -129,19 +129,6 @@ class Hasher(threading.Thread):
 		if time.time() - self.lastUpdateTime > self.UPDATE_INTERVAL or forcedUpdate:
 			self.lastUpdateTime = time.time()
 			self.log.debug("Progress Update!")
-			# self.totalSize = 0
-			# self.totalVerifiedFiles = 0
-			# self.currentFile = ""
-			# self.currentSizeHashed = 0
-			# progress = {
-			# 			'verifiedFiles' : self.verifiedFiles,
-			# 			'totalHashSize' : self.totalSize,
-			# 			'totalHashedFiles': self.totalVerifiedFiles,
-			# 			'currentHashFile' : self.currentFile,
-			# 			'currentHashSize': self.currentSizeHashed,
-			# 			}
-			# progress.update(self.stats)
-			self.stats['dupDict'] = self.verifiedFiles
 			self.updateCallback(self.stats)	
 	
 	
@@ -165,7 +152,8 @@ class Hasher(threading.Thread):
 			record.append(newso)
 			self.log.info("Duplicate file found: %s.", newso.filename)
 		self.stats['filesHashed'] += 1
-		self.stats['totalHashSize'] += newso.getSize()
+		self.stats['sizeHashed'] += newso.getSize()
+		self.stats['currentHashFile'] = newso.getBasename()
 		
 	# def __addFile(self, newso):
 	# 	#Add it to the list

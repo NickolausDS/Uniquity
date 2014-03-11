@@ -76,7 +76,7 @@ class MainWindow(wx.Frame):
 		paddingPanel = wx.Panel(self, size=(0,20))
 		self.masterSizer.Add(paddingPanel, 0)
 		self.masterSizer.Add(self.mainSplitter, 1, wx.EXPAND)
-		self.masterSizer.Add(self.updatePanel, 0, wx.EXPAND | wx.ALL)
+		self.masterSizer.Add(self.updatePanel, 0, wx.EXPAND | wx.ALL, 10)
 		# self.masterSizer.Add(self.progressPanel, 0, wx.EXPAND | wx.ALL)
 		# #Layout sizers
 		self.SetSizer(self.masterSizer)
