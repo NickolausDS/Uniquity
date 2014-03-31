@@ -68,7 +68,7 @@ class Hasher(threading.Thread):
 				self.log.info("Verifying File: %s", nextSO.getFilename())
 				self.hash(nextSO)
 				self.hashQueue.task_done()
-				self.__update(True)
+				self.__update()
 			except Queue.Empty:
 				self.stats['hasherStatus'] = 'idle'
 			except Exception as e:
