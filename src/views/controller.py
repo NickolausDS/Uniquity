@@ -123,7 +123,6 @@ class Controller(object):
 
 		# self.mainView.updateProgressBar(0.0, "Preparing Scan...")
 		self.uniquity.addFiles(files)
-		self.uniquity.start()
 		self.uniquity.log.info("Finished.")
 		return True
 		
