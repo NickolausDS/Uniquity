@@ -22,7 +22,7 @@ BLOCK_SIZE = 65536
 MAIN_LOG_NAME = "Uniquity"
 MAIN_LOG_LEVEL = logging.WARNING
 
-GUI_LOG_NAME = "UniquityGUI"
+GUI_LOG_NAME = "GUI"
 GUI_LOG_LEVEL = logging.DEBUG
 
 #console logging

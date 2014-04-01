@@ -6,6 +6,9 @@ import sys
 
 import models.hashObject as hashObject
 import data.config as config
+#This also has the effect of setting up console logging, for now
+import views.logger
+
 
 # import thread
 
@@ -33,6 +36,7 @@ class Controller(object):
 
 		self.dupFileOutputMap = {}
 		
+		self.debug_update_calls = 0
 
 	
 	def refreshDuplicateFileOutput(self, dupDict=None):
@@ -213,6 +217,8 @@ class Controller(object):
 		return selection
 		
 	def updateViewProgress(self, args):
+		self.debug_update_calls += 1
+		self.log.debug("update calls: %d", self.debug_update_calls)
 		wx.CallAfter(self.mainView.updatePanel.updateProgress, args )
 		wx.CallAfter(self.refreshDuplicateFileOutput, args.get('hashedFiles', None))
 		# theFile = kwargs.get('file', "")
