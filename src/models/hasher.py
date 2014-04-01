@@ -135,7 +135,6 @@ class Hasher(threading.Thread):
 	def __addFile(self, newso):
 		#Check for 'collisions', files already present because they're the same size
 		record = self.verifiedFiles.get(newso.hashes, None)
-		# self.log.debug("RECORDS: %s" % str(self.verifiedFiles))
 		#If there's no record, there is no collision
 		if not record:
 			self.verifiedFiles[newso.hashes] = [newso]
@@ -144,10 +143,8 @@ class Hasher(threading.Thread):
 			#Make sure we don't add the record twice
 			for eachso in record:
 				if eachso.filename == newso.filename:
-					self.log.debug("Skipping file '%s', already added.", newso.filename)
+					self.log.error("Skipping file '%s', already added.", newso.filename)
 					return
-				else:
-					continue
 			#Add the record		
 			record.append(newso)
 			self.log.info("Duplicate file found: %s.", newso.filename)
