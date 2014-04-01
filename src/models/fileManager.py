@@ -91,7 +91,8 @@ class FileManager(threading.Thread):
 			
 	def __addFile(self, newso):
 		fileSize = newso.getSize()
-		#Check for 'collisions', files already present because they're the same size
+		#Check for 'collisions', files already present because they're the same size we
+		#will store all files of the same size in lists called 'records'
 		record = self.files.get(fileSize, None)
 		#If there's no record, there is no collision
 		if not record:
@@ -105,13 +106,17 @@ class FileManager(threading.Thread):
 				if each.filename == newso.filename:
 					self.log.error("File: '%s' added twice. ", each.filename)
 					return
-				else:
-					continue
 			#Add the record		
 			record.append(newso)
-			# self.hashQueue.put(newso)
-			for each in record:
-				self.hashQueue.put(each)
+			#Verify the file
+			self.hashQueue.put(newso)
+			#If the size is two, we also need to verify the other file in the record.
+			#This is because we don't need to hash files if the record size is less than
+			#2. However, we also know that all other records have been scanned if the size
+			#is greator than 2, because we will have previously scanned them.
+			if len(record) == 2:
+				self.hashQueue.put(record[0])
+				
 		self.stats['sizeScanned'] += fileSize
 		self.stats['filesScanned'] += 1
 		
