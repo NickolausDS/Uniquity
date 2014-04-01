@@ -9,8 +9,7 @@ import logging
 
 import fileManager
 import hasher
-import scanObject
-import scanParent
+import fileObject
 import data.config as config
 
 ##TODO: The file listings can get very large, possibly > 500 mb. We might consider storing this in
@@ -26,7 +25,7 @@ class Uniquity:
 		# self.firstPass = {}
 		# self.secondPass = {}
 		
-		#All files will be stored here as scanObjects, indexed by their filesize. The format follows:
+		#All files will be stored here as hashObjects, indexed by their filesize. The format follows:
 		# {10000: [so1, so2], 1234: [so3], 4567:[so4, so5, so6]}
 		self.allFiles = {}
 		
@@ -88,7 +87,7 @@ class Uniquity:
 		
 	def addFiles(self, inputFiles):
 		for each in inputFiles:
-			newjob = scanParent.ScanParent(each)
+			newjob = fileObject.FileObject(each)
 			self.fileQueue.put(newjob)
 			self.log.debug("Adding new file(s): " + str(inputFiles))
 			

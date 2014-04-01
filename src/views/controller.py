@@ -4,7 +4,7 @@ import logging
 import os
 import sys
 
-import models.scanObject as scanObject
+import models.hashObject as hashObject
 import data.config as config
 
 # import thread
@@ -24,15 +24,15 @@ class Controller(object):
 		# self.MAXFILESIZE = 0
 		# self.HASHALG = "md5"
 		# self.DEPTH = 0 #Zero means no max self.DEPTH (go forever)
-		
 		#Set data
 		self.uniquity = uniquity.Uniquity()
 		self.uniquity.setUpdateCallback(self.updateViewProgress)
 		self.log = logging.getLogger('.'.join((config.GUI_LOG_NAME, 'controller')))
 		#List of files and dirs we will scan with uniquity	
-		self.scanObjects = []
+		self.hashObjects = []
 
 		self.dupFileOutputMap = {}
+		
 
 	
 	def refreshDuplicateFileOutput(self, dupDict=None):
@@ -112,7 +112,7 @@ class Controller(object):
 		#We shouldn't need this bit when we're done with the refactor.
 		#Just hand the scan objects stragiht to Uniqutiy
 		files = []
-		for each in self.scanObjects:
+		for each in self.hashObjects:
 			files.append(each.getFilename())
 		if not files:
 			return False
@@ -132,24 +132,24 @@ class Controller(object):
 		for each in files:
 			#Check if the user already added this file
 			error = False
-			for sos in self.scanObjects:
+			for sos in self.hashObjects:
 				if sos.getFilename() == each:
 					self.mainView.printStatusError("Filename '" + each + "' already added!")
 					error = True
 					break
 			if error == False:
-				newSO = scanObject.ScanObject(each)
-				self.scanObjects.append(newSO)
+				newSO = hashObject.HashObject(each)
+				self.hashObjects.append(newSO)
 				self.mainView.printStatus("Added '" + newSO.getFilename() + "'.")
 		self.mainView.directoryView.updatePanel()
 
 	
-	#Remove files or directories from the list of scanObjects to scan with uniqutiy.		
+	#Remove files or directories from the list of hashObjects to scan with uniqutiy.		
 	def removeFiles(self, files):
 		for each in files:
-			for so in self.scanObjects:
+			for so in self.hashObjects:
 				if each == so.getFilename():
-					self.scanObjects.remove(so)
+					self.hashObjects.remove(so)
 					self.mainView.printStatus("Removed '" + each + "'.")
 		self.mainView.directoryView.updatePanel()
 	
@@ -162,9 +162,9 @@ class Controller(object):
 	
 	#This returns a nice user-viewable path for a requested duplicate file
 	#It basically shortenes the beginning of the filename to the basename
-	#of the scanObject.
+	#of the hashObject.
 	def getNiceDupName(self, dup):
-		for each in self.scanObjects:
+		for each in self.hashObjects:
 			if each.getFilename() in dup:
 				return dup.replace(each.getFilename(), each.getBasename())
 		
@@ -213,7 +213,6 @@ class Controller(object):
 		return selection
 		
 	def updateViewProgress(self, args):
-		
 		wx.CallAfter(self.mainView.updatePanel.updateProgress, args )
 		wx.CallAfter(self.refreshDuplicateFileOutput, args.get('hashedFiles', None))
 		# theFile = kwargs.get('file', "")

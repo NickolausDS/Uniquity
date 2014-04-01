@@ -79,9 +79,9 @@ class Hasher(threading.Thread):
 				break
 
 
-	def hash(self, so):
+	def hash(self, ho):
 		self.currentSizeHashed = 0
-		self.currentFile = so.filename
+		self.currentFile = ho.filename
 		
 		#Note: the weak hasher is a function, the strong hasher is an object
 		#For more info, see zlib and hashlib for weak and strong hashes respectfully
@@ -91,7 +91,7 @@ class Hasher(threading.Thread):
 		weakHash = 0
 		strongHash = ""
 		try:
-			theFile = open(so.getFilename(), 'rb')
+			theFile = open(ho.getFilename(), 'rb')
 			buf = theFile.read(self.blockSize)
 			while len(buf) > 0:
 				#Do some hashing
@@ -106,9 +106,9 @@ class Hasher(threading.Thread):
 				buf = theFile.read(self.blockSize)
 			theFile.close()
 			#set the weak hash
-			so.setWeakHash("%X"%(weakHash & 0xFFFFFFFF), self.weakHashAlgorithm )
-			so.setStrongHash(strongHasher.hexdigest(), self.strongHashAlgorithm )
-			self.__addFile(so)
+			ho.setWeakHash("%X"%(weakHash & 0xFFFFFFFF), self.weakHashAlgorithm )
+			ho.setStrongHash(strongHasher.hexdigest(), self.strongHashAlgorithm )
+			self.__addFile(ho)
 		except IOError as ioe:
 			self.log.error(ioe)
 		except Exception as e:
@@ -132,99 +132,23 @@ class Hasher(threading.Thread):
 			self.updateCallback(self.stats)	
 	
 	
-	def __addFile(self, newso):
+	def __addFile(self, newho):
 		#Check for 'collisions', files already present because they're the same size
-		record = self.verifiedFiles.get(newso.hashes, None)
+		record = self.verifiedFiles.get(newho.hashes, None)
 		#If there's no record, there is no collision
 		if not record:
-			self.verifiedFiles[newso.hashes] = [newso]
+			self.verifiedFiles[newho.hashes] = [newho]
 		#Add record to the queue to be hashed
 		else:
 			#Make sure we don't add the record twice
-			for eachso in record:
-				if eachso.filename == newso.filename:
-					self.log.error("Skipping file '%s', already added.", newso.filename)
+			for eachho in record:
+				if eachho.filename == newho.filename:
+					self.log.error("Skipping file '%s', already added.", newho.filename)
 					return
 			#Add the record		
-			record.append(newso)
-			self.log.info("Duplicate file found: %s.", newso.filename)
+			record.append(newho)
+			self.log.info("Duplicate file found: %s.", newho.filename)
 		self.stats['filesHashed'] += 1
-		self.stats['sizeHashed'] += newso.getSize()
-		self.stats['currentHashFile'] = newso.getBasename()
+		self.stats['sizeHashed'] += newho.getSize()
+		self.stats['currentHashFile'] = newho.getBasename()
 		
-	# def __addFile(self, newso):
-	# 	#Add it to the list
-	# 	if (fileHash in outputDict ):
-	# 		if( fname not in outputDict[fileHash] ):
-	# 			outputDict[fileHash].append(fname)
-	# 		else:
-	# 			self.log.debug("WARNING: " + fname + " Already hashed!")
-	# 	else:
-	# 		outputDict[fileHash] = [fname]
-
-	# #Weak checksum to narrow down the mass of files chosen
-	# def hashFiles(self, fileList, outputDict, hashFunct):
-	# 	for idx, fname in enumerate(fileList):
-	# 
-	# 		#Compute percent completed
-	# 		percent = float(idx) / float(len(self.fileListings) ) * 100.0
-	# 		#I'll say it now, this is a hack. It should be taken care of in the refactor
-	# 		#next week, but I'm really sorry if it didn't.
-	# 		#
-	# 		#Manually check if this is the second pass by checking if it has any files.
-	# 		if len(self.secondPass) == 0:
-	# 			self.updateProgress(percent/2.0, fname)
-	# 		else:
-	# 			self.updateProgress(percent/2.0+50.0, fname)
-	# 		# self.log.info("(%.1f%%) %s" %(percent, os.path.basename(fname) ))	
-	# 
-	# 		#Skip large files
-	# 		if(self.maxFileSize != 0):
-	# 			#Remove large files
-	# 			filesize = os.stat(fname).st_size / 2**20
-	# 			if (filesize > self.maxFileSize):
-	# 				self.filesSkipped.append(fname)
-	# 				self.log.warning("Skipped "+fname+" because it was too large (" + str(filesize) + "MB).")
-	# 				continue
-	# 
-	# 		#Hash File
-	# 		try:
-	# 			fileHash = hashFunct(fname)
-	# 		except IOError:
-	# 			self.log.error("Error: Could not open '" + fname + "'.")
-	# 			self.filesSkipped.append(fname)
-	# 			continue
-	# 
-	# 		#Add it to the list
-	# 		if (fileHash in outputDict ):
-	# 			if( fname not in outputDict[fileHash] ):
-	# 				outputDict[fileHash].append(fname)
-	# 			else:
-	# 				self.log.debug("WARNING: " + fname + " Already hashed!")
-	# 		else:
-	# 			outputDict[fileHash] = [fname]
-	# 
-	# def __weakHash(self, fileName, blocksize=65536):
-	# 	theFile = open(fileName, 'rb')
-	# 	buf = theFile.read(blocksize)
-	# 	prev = 0
-	# 	while len(buf) > 0:
-	# 		prev = zlib.crc32(buf, prev)
-	# 		buf = theFile.read(blocksize)
-	# 	theFile.close()
-	# 	return "%X"%(prev & 0xFFFFFFFF)
-	# 
-	# def __strongHash(self, fileName, blocksize=65536):
-	# 	hasher = self.strongHasher()
-	# 	try:
-	# 		theFile = open(fileName, 'rb')
-	# 	except IOError:
-	# 		self.log.error("Could not open: '" + fileName + "'.")
-	# 		return None
-	# 
-	# 	buf = theFile.read(blocksize)
-	# 	while len(buf) > 0:
-	# 		hasher.update(buf)
-	# 		buf = theFile.read(blocksize)
-	# 	theFile.close()
-	# 	return hasher.hexdigest()

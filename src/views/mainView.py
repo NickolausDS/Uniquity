@@ -36,7 +36,7 @@ class MainWindow(wx.Frame):
 		
 		
 		self.mainSplitter = wx.SplitterWindow(self, -1, style=wx.SP_3DSASH, size=(300,300))
-		self.directoryView = DirectoryView(self.mainSplitter, self.controller.scanObjects, self.toolbar)
+		self.directoryView = DirectoryView(self.mainSplitter, self.controller.hashObjects, self.toolbar)
 		self.tabHolder = wx.Notebook(self.mainSplitter, -1, style=(wx.NB_TOP))
 		
 		#SETUP TABBED OUTPUT DISPLAY

@@ -1,11 +1,11 @@
 import os
-import scanParent
+import fileObject
 
-#A file, derived under a scanParent
-class ScanObject(scanParent.ScanParent):
+#A file, derived under a fileObject
+class HashObject(fileObject.FileObject):
 	
 	def __init__(self, filename):
-		scanParent.ScanParent.__init__(self,filename)
+		fileObject.FileObject.__init__(self,filename)
 		self.stat = os.stat(filename)
 		
 		self._weakHash = ""

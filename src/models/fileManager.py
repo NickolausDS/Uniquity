@@ -3,8 +3,8 @@ import Queue
 import os
 import logging
 
-import scanObject
-import scanParent
+import hashObject
+import fileObject
 import time
 import data.config as config
 
@@ -37,12 +37,12 @@ class FileManager(threading.Thread):
 			try:
 				
 				#grabs host from fileQueue
-				nextScanParent = self.fileQueue.get(True, self.UPDATE_INTERVAL)
-				self.log.debug("Beginning scan: %s", nextScanParent.getFilename())
-				self.__scan(nextScanParent)
+				nextFileObject = self.fileQueue.get(True, self.UPDATE_INTERVAL)
+				self.log.debug("Beginning scan: %s", nextFileObject.getFilename())
+				self.__scan(nextFileObject)
 				self.fileQueue.task_done()
 				self.__update(True)
-				self.log.debug("Finished scanning: %s.", nextScanParent.getFilename())
+				self.log.debug("Finished scanning: %s.", nextFileObject.getFilename())
 			except Queue.Empty:
 				self.stats['scannerStatus'] = "idle"
 			except Exception as e:
@@ -53,17 +53,17 @@ class FileManager(threading.Thread):
 				break
 
 	#Scan a parent file
-	def __scan(self, scanParent):
+	def __scan(self, fileObject):
 		self.stats['scannerStatus'] = 'running'
-		for root, dirs, files in os.walk(scanParent.getFilename()):
+		for root, dirs, files in os.walk(fileObject.getFilename()):
 			for filename in files:
 				try:
-					newso = scanObject.ScanObject(os.path.join(root,filename))
-					self.stats['currentScanFile'] = newso.getBasename()
+					newho = hashObject.HashObject(os.path.join(root,filename))
+					self.stats['currentScanFile'] = newho.getBasename()
 					#Add to the dictionary indexed by size
-					self.__addFile(newso)
+					self.__addFile(newho)
 				except OSError as ose:
-					self.log.warning("File disappeared before we could scan it: %s", newso)
+					self.log.warning("File disappeared before we could scan it: %s", newho)
 				except Exception as e:
 					self.log.exception(e)
 				#check if we should stop what we are doing, otherwise continue
@@ -89,27 +89,27 @@ class FileManager(threading.Thread):
 			self.log.debug("Progress Update!")
 			self.updateCallback(self.stats)
 			
-	def __addFile(self, newso):
-		fileSize = newso.getSize()
+	def __addFile(self, newho):
+		fileSize = newho.getSize()
 		#Check for 'collisions', files already present because they're the same size we
 		#will store all files of the same size in lists called 'records'
 		record = self.files.get(fileSize, None)
 		#If there's no record, there is no collision
 		if not record:
-			self.files[fileSize] = [newso]
+			self.files[fileSize] = [newho]
 		#Add record to the queue to be hashed
 		else:
 			#Make sure we don't add the record twice. Really this should never happen,
 			#because during a scan we should check that we have already scanned these
 			#folders. Log an error if it does happen.
 			for each in record:
-				if each.filename == newso.filename:
+				if each.filename == newho.filename:
 					self.log.error("File: '%s' added twice. ", each.filename)
 					return
 			#Add the record		
-			record.append(newso)
+			record.append(newho)
 			#Verify the file
-			self.hashQueue.put(newso)
+			self.hashQueue.put(newho)
 			#If the size is two, we also need to verify the other file in the record.
 			#This is because we don't need to hash files if the record size is less than
 			#2. However, we also know that all other records have been scanned if the size

@@ -1,6 +1,6 @@
 import os
 
-class ScanParent(object):
+class FileObject(object):
 	
 	def __init__(self, filename):
 		self.filename = unicode(filename)
