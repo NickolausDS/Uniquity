@@ -7,8 +7,6 @@ import hashlib
 
 import data.config as config
 
-#KNOWN BUG: When a user shuts down uniquity DURING a run, the hasher
-# fails to shutdown.
 class Hasher(threading.Thread):
 	def __init__(self, hashQueue, verifiedFiles, updateCallback):
 		threading.Thread.__init__(self)
@@ -59,8 +57,7 @@ class Hasher(threading.Thread):
 			raise ValueError("Could not load hash algorithm '%s' from hashlib library." % newalg)
 
 	def run(self):
-		while True:
-			
+		while True:	
 			try:
 				#grabs host from fileQueue
 				nextSO = self.hashQueue.get(True, self.UPDATE_INTERVAL)
@@ -68,7 +65,16 @@ class Hasher(threading.Thread):
 				self.log.info("Verifying File: %s", nextSO.getFilename())
 				self.hash(nextSO)
 				self.hashQueue.task_done()
-				self.__update()
+				if self.hashQueue.empty():
+					self.stats['hasherStatus'] = 'idle'
+					self.stats['currentHashFile'] = ''
+					self.log.info("Hasher finished current queue: %d hashed, %d bytes", 
+						self.stats['filesHashed'],
+						self.stats['sizeHashed']
+						)
+					self.__update(True)
+				else:
+					self.__update()
 			except Queue.Empty:
 				self.stats['hasherStatus'] = 'idle'
 			except Exception as e:

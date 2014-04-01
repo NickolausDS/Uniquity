@@ -41,8 +41,17 @@ class FileManager(threading.Thread):
 				self.log.debug("Beginning scan: %s", nextFileObject.getFilename())
 				self.__scan(nextFileObject)
 				self.fileQueue.task_done()
-				self.__update(True)
 				self.log.debug("Finished scanning: %s.", nextFileObject.getFilename())
+				if self.fileQueue.empty():
+					self.stats['scannerStatus'] = 'idle'
+					self.stats['currentScanFile'] = ''
+					self.log.info("Scanner finished current queue: %d scanned, %d bytes", 
+						self.stats['filesScanned'],
+						self.stats['sizeScanned']
+						)
+					self.__update(True)	
+				else:
+					self.__update()
 			except Queue.Empty:
 				self.stats['scannerStatus'] = "idle"
 			except Exception as e:

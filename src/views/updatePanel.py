@@ -51,6 +51,13 @@ class UpdatePanel(wx.Panel):
 		# else:
 		# 	self.gauge.SetRange(stats.get('possibleDuplicates', 0))
 		# 	self.gauge.SetValue(stats.get('possibleDuplicates', 0))
+		
+		if stats.get("scannerStatus") == "idle":
+			stats['currentScanFile'] = 'Done'
+		if stats.get("hasherStatus") == "idle":
+			stats['currentHashFile'] = 'Done'
+			
+			
 		for idx, each in enumerate(self.scanP):
 			if stats.get(each):
 				self.scanInfo.DeleteItem(idx)
