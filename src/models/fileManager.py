@@ -98,9 +98,12 @@ class FileManager(threading.Thread):
 			self.files[fileSize] = [newso]
 		#Add record to the queue to be hashed
 		else:
-			#Make sure we don't add the record twice
+			#Make sure we don't add the record twice. Really this should never happen,
+			#because during a scan we should check that we have already scanned these
+			#folders. Log an error if it does happen.
 			for each in record:
-				if each.equals(newso):
+				if each.filename == newso.filename:
+					self.log.error("File: '%s' added twice. ", each.filename)
 					return
 				else:
 					continue
