@@ -78,7 +78,8 @@ class Controller(object):
 			index = self.mainView.dupFileOutput.InsertStringItem(sys.maxint, i[0])
 			self.dupFileOutputMap[i] = index
 			self.mainView.dupFileOutput.SetStringItem(index, 1, i[1])
-					
+			
+	#Method now considered legacy, future calls moved to fileObject		
 	def getNiceSizeInBytes(self, size):
 		if(size < 1000):
 			return str(round(size, 2)) + " Bytes (tiny)"

@@ -1,4 +1,5 @@
 import os
+import math
 
 class FileObject(object):
 	
@@ -42,3 +43,24 @@ class FileObject(object):
 	#Returns true if the file or directory has been scanned		
 	def hasScanned(self):
 		return self.hasScanned
+		
+	@staticmethod
+	def getNiceSizeInBytes(size, desc=False):
+		mag = int(math.floor(math.log(size, 1000)))
+		retVal = unicode(round(size / (1000.0 ** mag), 2))
+		namesByMag = {
+			0:("Bytes", "(tiny)"),
+			1:("KB", "(tiny)"), 
+			2:("MB", "(small)"), 
+			3:("GB", "(large)"),
+			4:("TB", "(HUGE)"),
+			5:("PB", "(MASSIVE)"),
+			6:("EB", "(SO MUCH DATA!!!)"),
+			7:("ZB", "(AHHHH!!!)"),
+			}
+		if desc:
+			retVal += " ".join(namesByMag[mag])
+		else:
+			retVal += namesByMag[mag][0]
+		return retVal
+		
