@@ -1,5 +1,7 @@
 import wx
 
+from models.fileObject import FileObject as fo
+
 
 class UpdatePanel(wx.Panel):
 	
@@ -11,7 +13,7 @@ class UpdatePanel(wx.Panel):
 		self.scanProperties = ['Scanned: ','Size Scanned: ','Current File: ']
 		self.scanP = ['filesScanned', 'sizeScanned', 'currentScanFile']
 		
-		self.verifiedProperties = ['Verified:', 'Size Verified:', 'Current File: ']
+		self.verifiedProperties = ['Verified:', 'Size Verified: ', 'Current File: ']
 		self.verifiedP = ['filesHashed','sizeHashed','currentHashFile']
 		
 		self.scanInfo = wx.ListCtrl(self, -1, style=wx.LC_LIST , size=(200,60))
@@ -57,6 +59,11 @@ class UpdatePanel(wx.Panel):
 		if stats.get("hasherStatus") == "idle":
 			stats['currentHashFile'] = 'Done'
 			
+		if stats.get('sizeScanned'):
+			stats['sizeScanned'] = fo.getNiceSizeInBytes(stats.get('sizeScanned'), desc=True)
+
+		if stats.get('sizeHashed'):
+			stats['sizeHashed'] = fo.getNiceSizeInBytes(stats.get('sizeHashed'), desc=True)	
 			
 		for idx, each in enumerate(self.scanP):
 			if stats.get(each):
