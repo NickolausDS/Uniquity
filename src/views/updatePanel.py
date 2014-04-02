@@ -61,9 +61,9 @@ class UpdatePanel(wx.Panel):
 		for idx, each in enumerate(self.scanP):
 			if stats.get(each):
 				self.scanInfo.DeleteItem(idx)
-				self.scanInfo.InsertStringItem(idx, self.scanProperties[idx] + str(stats.get(each)))
+				self.scanInfo.InsertStringItem(idx, self.scanProperties[idx] + unicode(stats.get(each)))
 		for idx, each in enumerate(self.verifiedP):
 			if stats.get(each):
 				self.verifiedInfo.DeleteItem(idx)
-				self.verifiedInfo.InsertStringItem(idx, self.verifiedProperties[idx] + str(stats.get(each)))
+				self.verifiedInfo.InsertStringItem(idx, self.verifiedProperties[idx] + unicode(stats.get(each)))
 		# self.scanInfo.Update()
