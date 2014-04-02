@@ -2,6 +2,7 @@ import threading
 import Queue
 import os
 import logging
+import copy
 
 import hashObject
 import fileObject
@@ -24,7 +25,7 @@ class FileManager(threading.Thread):
 
 		#STATS
 		self.stats = {}
-		self.stats['files'] = self.files
+		self.stats['scannedFiles'] = self.files
 		self.stats['filesScanned'] = 0
 		self.stats['sizeScanned'] = 0
 		self.stats['currentScanFile'] = None
@@ -96,7 +97,13 @@ class FileManager(threading.Thread):
 		if time.time() - self.lastUpdateTime > self.UPDATE_INTERVAL or forcedUpdate:
 			self.lastUpdateTime = time.time()
 			self.log.debug("Progress Update!")
-			self.updateCallback(self.stats)
+			
+			del self.stats['scannedFiles']
+			statsCopy = copy.deepcopy(self.stats)
+			statsCopy['scannedFiles'] = self.files
+			self.stats['scannedFiles'] = self.files
+			
+			self.updateCallback(statsCopy)
 			
 	def __addFile(self, newho):
 		fileSize = newho.getSize()

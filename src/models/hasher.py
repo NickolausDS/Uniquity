@@ -4,6 +4,7 @@ import logging
 import time
 import zlib
 import hashlib
+import copy
 
 import data.config as config
 
@@ -135,7 +136,13 @@ class Hasher(threading.Thread):
 		if time.time() - self.lastUpdateTime > self.UPDATE_INTERVAL or forcedUpdate:
 			self.lastUpdateTime = time.time()
 			self.log.debug("Progress Update!")
-			self.updateCallback(self.stats)	
+			
+			del self.stats['hashedFiles']
+			statsCopy = copy.deepcopy(self.stats)
+			statsCopy['hashedFiles'] = self.verifiedFiles
+			self.stats['hashedFiles'] = self.verifiedFiles
+			
+			self.updateCallback(statsCopy)	
 	
 	
 	def __addFile(self, newho):
