@@ -18,7 +18,7 @@ class Uniquity:
 		self.log = logging.getLogger('.'.join((config.MAIN_LOG_NAME, 'Main')))
 		#All files will be stored here as hashObjects, indexed by their filesize. The format follows:
 		# {10000: [so1, so2], 1234: [so3], 4567:[so4, so5, so6]}
-		self.allFiles = {}
+		self.scannedFiles = {}
 		self.hashedFiles = {}	
 		
 		self.updateCallbackFunction = None
@@ -29,7 +29,7 @@ class Uniquity:
 		self.hashQueue = Queue.Queue()
 		
 		#Setup the file manager
-		self.fileManager = fileManager.FileManager(self.fileQueue, self.hashQueue, self.allFiles, self.updateProgress)
+		self.fileManager = fileManager.FileManager(self.fileQueue, self.hashQueue, self.scannedFiles, self.updateProgress)
 		self.fileManager.setDaemon(True)
 		self.fileManager.start()
 			
@@ -66,11 +66,21 @@ class Uniquity:
 		return exitStatus
 	
 		
-	def addFiles(self, inputFiles):
+	def addFiles(self, inputFiles, block=False):
 		for each in inputFiles:
 			newjob = fileObject.FileObject(each)
 			self.fileQueue.put(newjob)
 			self.log.debug("Adding new file(s): " + str(inputFiles))
+		
+		if block == True:
+			while not fileQueue.empty() and not hashQueue.empty():
+				time.sleep(config.UPDATE_INTERVAL)
+			self.log.info("Uniquity finished all jobs.")
+
+	#Returns all duplicate files, as a giant list of smaller duplicate file lists.
+	#ex. [[dupfilename1, dupfilename1copy], [dupfilename2, dupfilename2copy, dupfilename2anothercopy]]
+	def getDuplicateFiles(self):
+		return [dup for dup in self.hashedFiles.values() if len(dup) > 1]
 
 	#Update our current progress completing the scan
 	#Docs regarding the contense of newProgress need to be added
