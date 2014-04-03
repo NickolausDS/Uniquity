@@ -69,9 +69,12 @@ class FileManager(threading.Thread):
 			for filename in files:
 				try:
 					newho = hashObject.HashObject(os.path.join(root,filename))
-					self.stats['currentScanFile'] = newho.getBasename()
-					#Add to the dictionary indexed by size
-					self.__addFile(newho)
+					if newho.isRegularFile():
+						self.__addFile(newho)
+					elif os.islink(newho.filename):
+						self.log.info("Skipping Symbolic Link: %s", newho.filename)
+					else:
+						self.log.warning("Skipping non-regular File: %s", newho.filename)
 				except OSError as ose:
 					self.log.warning("File disappeared before we could scan it: %s", newho)
 				except Exception as e:

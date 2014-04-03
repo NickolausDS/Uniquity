@@ -1,48 +1,62 @@
 import os
+import stat
 import math
+
 
 class FileObject(object):
 	
 	def __init__(self, filename):
-		self.filename = unicode(filename)
-		self.hasScanned = False
+		self._filename = unicode(filename)
+		self._stat = None
+		
+	@property
+	def filename(self):
+		return self._filename
+		
+	#Since getting file statistics is a system call, we won't stat a file
+	#unless we *Must* do so. System calls are expensive in large quantities. 
+	@property
+	def stat(self):
+		if self._stat == None:
+			self._stat = os.stat(self.filename)
+		return self._stat
+		
+	@property
+	def size(self):
+		return self.stat.st_size	
 		
 	def __str__(self):
-		return str(self.filename)
+		return str(self._filename)
 		
 	def __unicode__(self):
-		return unicode(self.filename)
+		return unicode(self._filename)
 		
 	def __eq__(self, other):
-		if self.filename == other.filename:
+		if self._filename == other.filename:
 			return True
 		return False
 		
-	def equals(self, othersp):
-		if self.filename == othersp.filename:
-			return True
-		else:
-			return False
+	def isRegularFile(self):
+		return stat.S_ISREG(self.stat.st_mode)	
 		
 	def getFilename(self):
-		return os.path.abspath(self.filename)
+		return os.path.abspath(self._filename)
 		
 	def getBasename(self):
-		return os.path.basename(self.filename)
+		return os.path.basename(self._filename)
 		
-	def contains(self, filename):
-		if self.filename in filename:
+	def getSize(self):
+		return self.stat.st_size
+		
+	def isInDir(self, directory):
+		
+		#Make sure it is a directory
+		assert(os.path.isdir(directory))
+		
+		if self._filename in directory:
 			return True
 		else:
-			return False
-		
-	#Set if the directory has been scanned
-	def setHasScanned(self, boolean_status):
-		self.hasScanned = boolean_status
-		
-	#Returns true if the file or directory has been scanned		
-	def hasScanned(self):
-		return self.hasScanned
+			return False			
 		
 	@staticmethod
 	def getNiceSizeInBytes(size, desc=False):

@@ -6,7 +6,6 @@ class HashObject(fileObject.FileObject):
 	
 	def __init__(self, filename):
 		fileObject.FileObject.__init__(self,filename)
-		self.stat = os.stat(filename)
 		
 		self._weakHash = ""
 		self._weakHashFunction = None
@@ -27,10 +26,6 @@ class HashObject(fileObject.FileObject):
 				if self.strongHash and other.strongHash and self.strongHash == other.strongHash:
 					return True
 		return False
-
-		
-	def getSize(self):
-		return self.stat.st_size
 
 	@property
 	def hashes(self):
