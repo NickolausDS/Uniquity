@@ -149,7 +149,7 @@ class Hasher(threading.Thread):
 		#Check for 'collisions', files already present because they're the same size
 		record = self.verifiedFiles.get(newho.hashes, None)
 		#If there's no record, there is no collision
-		if not record:
+		if record == None:
 			self.verifiedFiles[newho.hashes] = [newho]
 		#Add record to the queue to be hashed
 		else:

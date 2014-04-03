@@ -114,7 +114,7 @@ class FileManager(threading.Thread):
 		#will store all files of the same size in lists called 'records'
 		record = self.files.get(fileSize, None)
 		#If there's no record, there is no collision
-		if not record:
+		if record == None:
 			self.files[fileSize] = [newho]
 		#Add record to the queue to be hashed
 		else:
