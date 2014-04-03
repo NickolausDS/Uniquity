@@ -18,7 +18,6 @@ sys.path.insert(0, os.path.abspath(BASEPATH))
 
 
 import data.config
-import models.logger
 import models.uniquity
 import views.mainView
 

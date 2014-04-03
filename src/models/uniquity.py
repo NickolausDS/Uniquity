@@ -6,6 +6,7 @@ from os.path import isfile, isdir
 import Queue
 
 import logging
+import logger
 
 import fileManager
 import hasher
