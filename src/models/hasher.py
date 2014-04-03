@@ -97,32 +97,41 @@ class Hasher(threading.Thread):
 		#Weak hash needs to start at 0, so zlib can add to it
 		weakHash = 0
 		strongHash = ""
+		#Do the open() in a separate try block, so if it fails further down the line, we
+		#don't forget to close it.
 		try:
-			theFile = open(ho.getFilename(), 'rb')
-			buf = theFile.read(self.blockSize)
-			while len(buf) > 0:
-				#Do some hashing
-				weakHash = weakHasher(buf, weakHash)
-				strongHasher.update(buf)
-				#Tell the world what we're up to
-				self.currentSizeHashed += len(buf)
-				self.__update()
-				if self.__shouldShutdown():
-					return
-				#Get more junk to hash
+			theFile = open(ho.filename, 'rb')
+			try:
 				buf = theFile.read(self.blockSize)
-			theFile.close()
-			#set the weak hash
-			ho.setWeakHash("%X"%(weakHash & 0xFFFFFFFF), self.weakHashAlgorithm )
-			ho.setStrongHash(strongHasher.hexdigest(), self.strongHashAlgorithm )
-			self.__addFile(ho)
+				while len(buf) > 0:
+					#Do some hashing
+					weakHash = weakHasher(buf, weakHash)
+					strongHasher.update(buf)
+					#Tell the world what we're up to
+					self.currentSizeHashed += len(buf)
+					self.__update()
+					if self.__shouldShutdown():
+						return
+					#Get more junk to hash
+					buf = theFile.read(self.blockSize)
+				theFile.close()
+				#set the weak hash
+				ho.setWeakHash("%X"%(weakHash & 0xFFFFFFFF), self.weakHashAlgorithm )
+				ho.setStrongHash(strongHasher.hexdigest(), self.strongHashAlgorithm )
+				self.__addFile(ho)
+			except IOError as ioe:
+				#We will consider these as predictable failures, and so log them as errors
+				#instead of exceptions, because we don't need 
+				self.log.error(ioe)
+			except Exception as e:
+				self.log.exception(e)
+			finally:
+				theFile.close()
 		except IOError as ioe:
-			self.log.error(ioe)
+				self.log.error("Failed to open %s: %s", ho.filename, str(ioe))
 		except Exception as e:
-			self.log.exception(e)
-			
-		# self.__update(True)
-		
+				self.log.exception(e)
+					
 	#Returns true if it should shutdwon		
 	def __shouldShutdown(self):
 		if self.SHUTDOWN_FLAG:
