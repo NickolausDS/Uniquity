@@ -9,11 +9,12 @@ import copy
 import data.config as config
 
 class Hasher(threading.Thread):
-	def __init__(self, hashQueue, verifiedFiles, updateCallback):
+	def __init__(self, hashQueue, verifiedFiles, duplicateFiles, updateCallback):
 		threading.Thread.__init__(self)
 		self.hashQueue = hashQueue
 		self.updateCallback = updateCallback
 		self.verifiedFiles = verifiedFiles
+		self.duplicateFiles = duplicateFiles
 		
 		self.UPDATE_INTERVAL = config.UPDATE_INTERVAL
 		self.log = logging.getLogger('.'.join((config.MAIN_LOG_NAME, 'Hasher')))
@@ -170,7 +171,10 @@ class Hasher(threading.Thread):
 			#Add the record		
 			record.append(newho)
 			self.log.info("Duplicate file found: %s.", newho.filename)
+			if len(record) == 2:
+				self.duplicateFiles[record[0].hashes] = record
 		self.stats['filesHashed'] += 1
 		self.stats['sizeHashed'] += newho.getSize()
 		self.stats['currentHashFile'] = newho.getBasename()
+				
 		

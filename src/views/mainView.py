@@ -1,4 +1,5 @@
 import wx
+import logging
 
 import controller
 
@@ -16,6 +17,7 @@ class MainWindow(wx.Frame):
 		# In this case, we select 200px width and the default height.
 		wx.Frame.__init__(self, parent, title=title, size=(800,600))
 		self.controller = controller.Controller(self)
+		self.log = logging.getLogger('.'.join((config.GUI_LOG_NAME, "MainView")))
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 
 		#setup drag and drop. It fires when someone drags a file onto the main window
@@ -82,6 +84,7 @@ class MainWindow(wx.Frame):
 		self.updateTimer = wx.Timer(self, self.UPDATE_TIMER_ID) 
 		wx.EVT_TIMER(self, self.UPDATE_TIMER_ID, self.updateProgress)  # call the on_timer function
 		self.updateTimer.Start(self.UPDATE_INTERVAL)
+		self.duplicateFiles = 0
 		
 		
 		
@@ -116,13 +119,16 @@ class MainWindow(wx.Frame):
 			self.controller.removeFiles(selection)
 
 	def updateProgress(self, e):
-		if not self.controller.modelIsIdle():
+		newstats = self.controller.getUpdate()
+		
+		if newstats.get('filesHashed') != self.duplicateFiles:
 			#This is the line we *should* call
 			# self.duplicateFileView.updateProgress(self.controller.getDuplicateFiles())
 			#This is what we do instead, because the view hasn't yet been refactored
 			#I died a little bit inside when I wrote this line of code.
-			self.controller.refreshDuplicateFileOutput(self.controller.uniquity.hashedFiles)
-			self.updatePanel.updateProgress(self.controller.getUpdate())
+			self.controller.refreshDuplicateFileOutput(self.controller.uniquity.duplicateFilesIndex)
+			self.updatePanel.updateProgress(newstats)
+			self.duplicateFiles = newstats.get("filesHashed")
 		self.updateTimer.Start(self.UPDATE_INTERVAL)
 
 	def printStatus(self, text):

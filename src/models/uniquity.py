@@ -20,7 +20,9 @@ class Uniquity:
 		#All files will be stored here as hashObjects, indexed by their filesize. The format follows:
 		# {10000: [so1, so2], 1234: [so3], 4567:[so4, so5, so6]}
 		self.scannedFiles = {}
-		self.hashedFiles = {}	
+		self.hashedFiles = {}
+		#Basically the same as hashedFiles, but we only add duplicate enteries.
+		self.duplicateFilesIndex = {}
 		
 		self.updateCallbackFunction = None
 		
@@ -35,7 +37,7 @@ class Uniquity:
 		self.fileManager.start()
 			
 		#Setup the hasher			
-		self.hasher = hasher.Hasher(self.hashQueue, self.hashedFiles, self.updateProgress)
+		self.hasher = hasher.Hasher(self.hashQueue, self.hashedFiles, self.duplicateFilesIndex, self.updateProgress)
 		self.hasher.setDaemon(True)
 		self.hasher.start()
 		
@@ -84,7 +86,7 @@ class Uniquity:
 	#Returns all duplicate files, as a giant list of smaller duplicate file lists.
 	#ex. [[dupfilename1, dupfilename1copy], [dupfilename2, dupfilename2copy, dupfilename2anothercopy]]
 	def getDuplicateFiles(self):
-		return [dup for dup in self.hashedFiles.values() if len(dup) > 1]
+		return [self.duplicateFilesIndex.values()]
 
 	def isIdle(self):
 		if self.fileQueue.empty() and self.hashQueue.empty():
