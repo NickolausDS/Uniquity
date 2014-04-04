@@ -1,10 +1,4 @@
 import wx
-from wx.lib.mixins.listctrl import CheckListCtrlMixin, ListCtrlAutoWidthMixin
-import os
-import sys
-
-import time
-import threading
 
 import controller
 
@@ -58,11 +52,6 @@ class MainWindow(wx.Frame):
 		self.tabHolder.AddPage(self.dupFilePanel, "Duplicate Files Found")
 		self.tabHolder.AddPage(self.filesSkippedOutput, "Files Skipped")
 		
-		#Put all errors on this pane
-		method = lambda string: self.filesSkippedOutput.AppendText(string)
-		self.controller.log.warning = method
-		self.controller.log.error = method
-		self.controller.log.critical = method
 		
 		##PUT MAIN GUI TOGETHER
 		self.mainSplitter.SplitVertically(self.directoryView, self.tabHolder)
@@ -138,13 +127,6 @@ class MainWindow(wx.Frame):
 		#We could have an 'are you sure' dialogue here if we wanted.
 		self.controller.shutdown()
 		self.Destroy()
-
-
-class ResizingListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
-	def __init__(self, parent):
-		wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT | wx.LC_NO_HEADER)
-		# CheckListCtrlMixin.__init__(self)
-		ListCtrlAutoWidthMixin.__init__(self)
 		
 class DragAndDrop(wx.FileDropTarget):
 	def __init__(self, window, callbackFunct):
