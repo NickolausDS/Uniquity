@@ -13,10 +13,13 @@ Fixed
 
 * Bug with scanning files with special characters in their filenames
 * Refactored lots of model code, making future updates and add-ons faster to develop
+	* In fact, I don't think any original model code exists
+* Bug when special files were scanned, such as sockets and links
 
 Changed
 
 * Disabled the Progress bar for now, since the scanner is now too fast for it to make any sense.
+* Disabled the 'skipped file output' until proper logging is established
 
 
 
