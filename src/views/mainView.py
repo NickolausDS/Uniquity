@@ -86,6 +86,7 @@ class MainWindow(wx.Frame):
 		#STATUS BAR
 		self.statusBar = self.CreateStatusBar() # A Statusbar in the bottom of the window
 		self.statusBar.SetStatusText("Welcome to the Uniquity File Scanner!")
+		self.STATUS_TIMER_ID = 0
 		
 ### COMMON METHODS ###
 #These methods, start, addFiles, and RemoveFiles, are both used by the fileMenu and the
@@ -122,23 +123,16 @@ class MainWindow(wx.Frame):
 		self.statusBar.Refresh()
 
 	def printStatusError(self, error):
-		class ResetStatusBarTimer(threading.Thread):
-			def __init__(self, milliseconds, statusBar):
-				threading.Thread.__init__(self)
-				self.milliseconds = milliseconds
-				self.statusBar = statusBar
-
-			def run(self):
-				time.sleep(self.milliseconds / 1000.0)
-				self.statusBar.SetBackgroundColour("WHITE")
-				self.statusBar.Refresh()
-				del self
-				
+		self.timer = wx.Timer(self, self.STATUS_TIMER_ID)  # message will be sent to the panel
+		self.timer.Start(2000)  # x100 milliseconds
+		wx.EVT_TIMER(self, self.STATUS_TIMER_ID, self.__resetStatusBar)  # call the on_timer function
 		self.statusBar.SetStatusText(error)
 		self.statusBar.SetBackgroundColour("RED")
 		self.statusBar.Refresh()
-		sbr = ResetStatusBarTimer(1500, self.statusBar)
-		sbr.start()
+		
+	def __resetStatusBar(self, event):
+		self.statusBar.SetBackgroundColour("WHITE")
+		self.statusBar.Refresh()
 		
 	def OnClose(self, e):
 		#We could have an 'are you sure' dialogue here if we wanted.
