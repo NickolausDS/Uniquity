@@ -47,10 +47,10 @@ class MainWindow(wx.Frame):
 		self.dupFilePanel.SetSizer(self.dupFileSizer)
 		
 		
-		self.filesSkippedOutput = wx.TextCtrl(self.tabHolder, pos=(300,20), size=(200,300), style=wx.TE_MULTILINE | wx.TE_READONLY)
+		# self.filesSkippedOutput = wx.TextCtrl(self.tabHolder, pos=(300,20), size=(200,300), style=wx.TE_MULTILINE | wx.TE_READONLY)
 		
 		self.tabHolder.AddPage(self.dupFilePanel, "Duplicate Files Found")
-		self.tabHolder.AddPage(self.filesSkippedOutput, "Files Skipped")
+		# self.tabHolder.AddPage(self.filesSkippedOutput, "Files Skipped")
 		
 		
 		##PUT MAIN GUI TOGETHER
