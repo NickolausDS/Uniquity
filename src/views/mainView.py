@@ -2,7 +2,7 @@ import wx
 
 import controller
 
-from data.config import *
+import data.config as config
 from directoryView import DirectoryView
 from fileMenu import FileMenu
 from toolbar import Toolbar
@@ -72,10 +72,18 @@ class MainWindow(wx.Frame):
 		self.SetAutoLayout(1)
 		self.Show()
 		
-		#STATUS BAR
+		#STATUS BAR & TIMERS
 		self.statusBar = self.CreateStatusBar() # A Statusbar in the bottom of the window
 		self.statusBar.SetStatusText("Welcome to the Uniquity File Scanner!")
 		self.STATUS_TIMER_ID = 0
+		
+		self.UPDATE_INTERVAL = config.GUI_UPDATE_INTERVAL
+		self.UPDATE_TIMER_ID = 1
+		self.updateTimer = wx.Timer(self, self.UPDATE_TIMER_ID) 
+		wx.EVT_TIMER(self, self.UPDATE_TIMER_ID, self.updateProgress)  # call the on_timer function
+		self.updateTimer.Start(self.UPDATE_INTERVAL)
+		
+		
 		
 ### COMMON METHODS ###
 #These methods, start, addFiles, and RemoveFiles, are both used by the fileMenu and the
@@ -106,6 +114,16 @@ class MainWindow(wx.Frame):
 			self.mainView.printStatusError("Select a file or directory to remove it")
 		else:
 			self.controller.removeFiles(selection)
+
+	def updateProgress(self, e):
+		if not self.controller.modelIsIdle():
+			#This is the line we *should* call
+			# self.duplicateFileView.updateProgress(self.controller.getDuplicateFiles())
+			#This is what we do instead, because the view hasn't yet been refactored
+			#I died a little bit inside when I wrote this line of code.
+			self.controller.refreshDuplicateFileOutput(self.controller.uniquity.hashedFiles)
+			self.updatePanel.updateProgress(self.controller.getUpdate())
+		self.updateTimer.Start(self.UPDATE_INTERVAL)
 
 	def printStatus(self, text):
 		self.statusBar.SetStatusText(text)

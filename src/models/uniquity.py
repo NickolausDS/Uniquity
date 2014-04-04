@@ -38,6 +38,9 @@ class Uniquity:
 		self.hasher = hasher.Hasher(self.hashQueue, self.hashedFiles, self.updateProgress)
 		self.hasher.setDaemon(True)
 		self.hasher.start()
+		
+		#Where we store update information and such about the hasher and fileManager
+		self.stats = {}
 
 	#try for graceful shutdown. Returns true if successful, false if it quit with jobs running.
 	def shutdown(self):
@@ -83,6 +86,16 @@ class Uniquity:
 	def getDuplicateFiles(self):
 		return [dup for dup in self.hashedFiles.values() if len(dup) > 1]
 
+	def isIdle(self):
+		if self.fileQueue.empty() and self.hashQueue.empty():
+			return True
+		return False
+		
+	def getUpdate(self):
+		self.stats.update(self.fileManager.stats)
+		self.stats.update(self.hasher.stats)
+		return self.stats
+		
 	#Update our current progress completing the scan
 	#Docs regarding the contense of newProgress need to be added
 	def updateProgress(self, newProgress):

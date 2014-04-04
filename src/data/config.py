@@ -9,7 +9,9 @@ IMAGE_DIR=os.path.join(os.getcwd(), "assets/")
 #the file_manager and the hasher. 
 #Low values: create unnessesary load on the CPU
 #High values: create lag time and unresponsiveness to the user
-UPDATE_INTERVAL = 0.1
+UPDATE_INTERVAL = 0.1 # Time in SECONDS
+
+GUI_UPDATE_INTERVAL = 100 # Time in MILLISECONDS
 #Time in seconds we wait for all threads to terminate before we terminate anyway
 SHUTDOWN_MAX_WAIT = 1.0
 

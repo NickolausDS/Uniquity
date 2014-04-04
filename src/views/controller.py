@@ -164,6 +164,15 @@ class Controller(object):
 		else:
 			raise Exception("Failed to set LC color, no item named " + str(string) + " Exists.")
 	
+	def getDuplicateFiles(self):
+		return self.uniquity.getDuplicateFiles()
+		
+	def modelIsIdle(self):
+		return self.uniquity.isIdle()
+		
+	def getUpdate(self):
+		return self.uniquity.getUpdate()
+	
 	#This returns a nice user-viewable path for a requested duplicate file
 	#It basically shortenes the beginning of the filename to the basename
 	#of the hashObject.
@@ -219,8 +228,8 @@ class Controller(object):
 	def updateViewProgress(self, args):
 		self.debug_update_calls += 1
 		self.log.debug("update calls: %d", self.debug_update_calls)
-		wx.CallAfter(self.mainView.updatePanel.updateProgress, args )
-		wx.CallAfter(self.refreshDuplicateFileOutput, args.get('hashedFiles', None))
+		# wx.CallAfter(self.mainView.updatePanel.updateProgress, args )
+		# wx.CallAfter(self.refreshDuplicateFileOutput, args.get('hashedFiles', None))
 		# theFile = kwargs.get('file', "")
 		# percent = kwargs.get('percent', 0.0)
 		# self.mainView.updateProgressBar(percent, self.getNiceDupName(theFile))		
