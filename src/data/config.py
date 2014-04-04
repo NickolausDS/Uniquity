@@ -2,7 +2,7 @@ import os
 import logging
 
 #Note: trailing slash shouldn't be there.
-IMAGE_DIR=os.path.join(os.getcwd(), "assets/")
+IMAGE_DIR="assets"
 
 
 #Time in seconds for uniquity to post progress updates, on both

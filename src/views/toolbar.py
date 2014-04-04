@@ -3,8 +3,21 @@ import os
 import sys
 import subprocess
 
+import logging
 
-from data.config import IMAGE_DIR
+from data.config import IMAGE_DIR as BASE_IMAGE_DIR
+
+#This is a hack, since I don't have time to figure out how this should be set in 
+#the config. 
+if getattr(sys, 'frozen', False):
+    # we are running in a |PyInstaller| bundle
+    BASEPATH = sys._MEIPASS
+else:
+	# we are running in a normal Python environment
+	BASEPATH = os.path.dirname(__file__)
+	BASEPATH = os.path.abspath(os.path.join(BASEPATH, os.pardir))
+
+IMAGE_DIR = os.path.join(BASEPATH, BASE_IMAGE_DIR)
 
 class Toolbar(wx.ToolBar):
 
