@@ -47,8 +47,8 @@ class MainWindow(wx.Frame):
 		self.dupFilePanel = wx.Panel(self.tabHolder)
 		self.dupFileSizer = wx.BoxSizer(wx.HORIZONTAL)		
 		self.dupFileOutput = wx.ListCtrl(self.dupFilePanel, -1, style=wx.LC_REPORT | wx.LC_NO_HEADER)
-		self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.enableDupFileTools, self.dupFileOutput)
-		self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.disableDupFileTools, self.dupFileOutput)
+		self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.toolbar.enableDupFileTools, self.dupFileOutput)
+		self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.toolbar.disableDupFileTools, self.dupFileOutput)
 		self.dupFileSizer.Add(self.dupFileOutput, 100, flag=wx.EXPAND | wx.ALL)
 		self.dupFilePanel.SetSizer(self.dupFileSizer)
 		
@@ -139,18 +139,6 @@ class MainWindow(wx.Frame):
 		self.controller.shutdown()
 		self.Destroy()
 
-		
-
-	#These should be moved to the toolbar object
-	#They will once the dup flie view gets refactored
-	def enableDupFileTools(self, e):
-		if self.controller.getSelectedDups():
-			self.toolbar.EnableTool(wx.ID_VIEW_DETAILS, True)
-			self.toolbar.EnableTool(wx.ID_DELETE, True)
-		
-	def disableDupFileTools(self, e):
-		self.toolbar.EnableTool(wx.ID_VIEW_DETAILS, False)
-		self.toolbar.EnableTool(wx.ID_DELETE, False)
 
 class ResizingListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
 	def __init__(self, parent):

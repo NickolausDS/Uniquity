@@ -97,6 +97,15 @@ class Toolbar(wx.ToolBar):
 		else:
 			self.parent.printStatusError("Select one or more duplicate files from the list to delete.")
 
+	def enableDupFileTools(self, e):
+		if self.controller.getSelectedDups():
+			self.EnableTool(wx.ID_VIEW_DETAILS, True)
+			self.EnableTool(wx.ID_DELETE, True)
+		
+	def disableDupFileTools(self, e):
+		self.EnableTool(wx.ID_VIEW_DETAILS, False)
+		self.EnableTool(wx.ID_DELETE, False)
+
 	def __loadImage(self, filename):
 		fullpath = os.path.join(IMAGE_DIR, filename)
 		#wxPython will throw a terrible tissy fit if it tries to load a file that doesn't exist.
