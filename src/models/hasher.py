@@ -16,6 +16,10 @@ class Hasher(threading.Thread):
 		self.verifiedFiles = verifiedFiles
 		self.duplicateFiles = duplicateFiles
 		
+		#Indexes used for efficiency
+		self.duplicateFilesSortedIndex = []
+		self.duplicateFilesNewItems = []
+		
 		self.UPDATE_INTERVAL = config.UPDATE_INTERVAL
 		self.log = logging.getLogger('.'.join((config.MAIN_LOG_NAME, 'Hasher')))
 		
@@ -152,9 +156,19 @@ class Hasher(threading.Thread):
 			statsCopy['hashedFiles'] = self.verifiedFiles
 			self.stats['hashedFiles'] = self.verifiedFiles
 			
+			#Consider moving this work onto a different thread. It doesn't really
+			#make sense for the hasher to do this work, and it's CPU intensive.
+			self.duplicateFilesSortedIndex.extend(self.duplicateFilesNewItems)
+			self.duplicateFilesSortedIndex.sort(reverse=True)
+			self.duplicateFilesNewItems = []
+			
 			self.updateCallback(statsCopy)	
 	
-	
+	#Note: This method hasn't been tested, or the speed increase of the above in the _update 
+	#method. Date: 04/07/2014
+	def getDuplicateFilesSortedBySize(self, nItems=0):
+		return [self.duplicateFiles[item] for item in self.duplicateFilesStortedIndex[0:nItems]]
+		
 	def __addFile(self, newho):
 		#Check for 'collisions', files already present because they're the same size
 		record = self.verifiedFiles.get(newho.hashes, None)
@@ -173,6 +187,7 @@ class Hasher(threading.Thread):
 			self.log.info("Duplicate file found: %s.", newho.filename)
 			if len(record) == 2:
 				self.duplicateFiles[record[0].hashes] = record
+				self.duplicateFilesNewItems.append(record[0].size)
 		self.stats['filesHashed'] += 1
 		self.stats['sizeHashed'] += newho.getSize()
 		self.stats['currentHashFile'] = newho.getBasename()

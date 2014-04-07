@@ -87,7 +87,14 @@ class Uniquity:
 	#ex. [[dupfilename1, dupfilename1copy], [dupfilename2, dupfilename2copy, dupfilename2anothercopy]]
 	def getDuplicateFiles(self):
 		return [self.duplicateFilesIndex.values()]
-
+		
+	#Get a sorted list of files by size. nItems is how many items to fetch.
+	#The time for this method to execute is about O(2k) where k is nItems.	
+	#
+	#NOTE: This method hasn't been tested. Apr 7th 2014.
+	def getDuplicateFilesSortedBySize(self, nItems=0):
+		return hasher.getDuplicateFilesSortedBySize(nItems)
+		
 	def isIdle(self):
 		if self.fileQueue.empty() and self.hashQueue.empty():
 			return True
