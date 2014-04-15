@@ -16,7 +16,7 @@ class ReportDupFileView(wx.ListCtrl):
 		self.InsertColumn(1, "Size")
 		self.InsertColumn(2, "Hash")
 		self.SetColumnWidth(0, 350)
-		self.SetColumnWidth(1, 100)
+		self.SetColumnWidth(1, 120)
 		self.SetColumnWidth(2, 175)
 
 		#For some reason, we need to make a blank image or the second
