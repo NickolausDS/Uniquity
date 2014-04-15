@@ -13,6 +13,10 @@ class FileObject(object):
 	def filename(self):
 		return self._filename
 		
+	@property
+	def basename(self):
+		return os.path.basename(self.filename)
+		
 	#Since getting file statistics is a system call, we won't stat a file
 	#unless we *Must* do so. System calls are expensive in large quantities. 
 	@property
@@ -23,7 +27,15 @@ class FileObject(object):
 		
 	@property
 	def size(self):
-		return self.stat.st_size	
+		return self.stat.st_size
+		
+	@property
+	def niceSize(self):
+		return self.getNiceSizeInBytes(self.size, False)
+		
+	@property
+	def niceSizeAndDesc(self):
+		return self.getNiceSizeInBytes(self.size, True)	
 		
 	def __str__(self):
 		return str(self._filename)
@@ -45,8 +57,22 @@ class FileObject(object):
 	def getBasename(self):
 		return os.path.basename(self._filename)
 		
+	#A 'shortname' is kinda like the middle ground between a full filename and a basename
+	#We give just enough of the full filename so the user knows	generally where the file
+	#is. 
+	def getShortname(self, parent):
+		assert(self is not parent)
+		junk = parent.filename.replace(parent.basename, u'')
+		return self.filename.replace(junk, u'')
+		
+	def isParent(self, parent):
+		if parent.filename in self.filename:
+			return True
+		return False
+		
 	def getSize(self):
 		return self.stat.st_size
+		
 		
 	def isInDir(self, directory):
 		
@@ -61,6 +87,12 @@ class FileObject(object):
 	@staticmethod
 	def getNiceSizeInBytes(size, desc=False):
 		mag = int(math.floor(math.log(size, 1000)))
+		#There was a strange problem once, where the round() builtin function
+		#started complaining about an Integer Value Error for seemingly no reason
+		#It hasn't done it since, but these two lines solved it last time. I have
+		#no idea why it complained the first time.
+		# abrev = size / (1000.0 ** mag)
+		# retVal = str(int(abrev))
 		retVal = unicode(round(size / (1000.0 ** mag), 2))
 		namesByMag = {
 			0:("Bytes", "(tiny)"),
