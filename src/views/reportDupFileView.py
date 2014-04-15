@@ -1,6 +1,5 @@
 import wx
 
-import baseDupFileView
 import abc
 
 

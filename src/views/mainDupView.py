@@ -2,7 +2,6 @@ import wx
 
 import dupViewController
 import reportDupFileView
-import rdfv
 
 
 

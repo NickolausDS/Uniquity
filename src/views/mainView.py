@@ -8,6 +8,7 @@ from directoryView import DirectoryView
 from fileMenu import FileMenu
 from toolbar import Toolbar
 import updatePanel
+import mainDupView
 
 class MainWindow(wx.Frame):
 	def __init__(self, parent, title):
@@ -33,35 +34,16 @@ class MainWindow(wx.Frame):
 		
 		self.mainSplitter = wx.SplitterWindow(self, -1, style=wx.SP_3DSASH, size=(300,300))
 		self.directoryView = DirectoryView(self.mainSplitter, self.controller.hashObjects, self.toolbar)
-		self.tabHolder = wx.Notebook(self.mainSplitter, -1, style=(wx.NB_TOP))
-		
-		#SETUP TABBED OUTPUT DISPLAY
-		
-		# font = wx.SystemSettings_GetFont(wx.SYS_SYSTEM_FONT)
-		# font.SetPointSize(12)
-		
-		self.dupFilePanel = wx.Panel(self.tabHolder)
-		self.dupFileSizer = wx.BoxSizer(wx.HORIZONTAL)		
-		self.dupFileOutput = wx.ListCtrl(self.dupFilePanel, -1, style=wx.LC_REPORT | wx.LC_NO_HEADER)
-		self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.toolbar.enableDupFileTools, self.dupFileOutput)
-		self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.toolbar.disableDupFileTools, self.dupFileOutput)
-		self.dupFileSizer.Add(self.dupFileOutput, 100, flag=wx.EXPAND | wx.ALL)
-		self.dupFilePanel.SetSizer(self.dupFileSizer)
-		
-		
-		# self.filesSkippedOutput = wx.TextCtrl(self.tabHolder, pos=(300,20), size=(200,300), style=wx.TE_MULTILINE | wx.TE_READONLY)
-		
-		self.tabHolder.AddPage(self.dupFilePanel, "Duplicate Files Found")
-		# self.tabHolder.AddPage(self.filesSkippedOutput, "Files Skipped")
-		
+		self.mainDupView = mainDupView.MainDupView(self.mainSplitter, controller)
+	
 		
 		##PUT MAIN GUI TOGETHER
-		self.mainSplitter.SplitVertically(self.directoryView, self.tabHolder)
+		self.mainSplitter.SplitVertically(self.directoryView, self.mainDupView)
 		#SetMinimumPaneSize stops the splitter from being closed by the user
 		self.mainSplitter.SetMinimumPaneSize(20)
 		#Combine the top (toolbar) and bottom (everything else) into the master
 		#We will re-split the toolbar when we have dup files to show the user
-		self.mainSplitter.Unsplit(self.tabHolder)		        
+		self.mainSplitter.Unsplit(self.mainDupView)		        
 
 		self.masterSizer = wx.BoxSizer(wx.VERTICAL)
 		paddingPanel = wx.Panel(self, size=(0,20))
@@ -95,7 +77,7 @@ class MainWindow(wx.Frame):
 	def start(self):
 		# self.updateProgressBar(0.0, "Preparing Scan...")
 		if self.controller.start():
-			self.mainSplitter.SplitVertically(self.directoryView, self.tabHolder)
+			self.mainSplitter.SplitVertically(self.directoryView, self.mainDupView)
 			# self.updateProgressBar(100.0, "Finished!")
 		else:
 			self.printStatusError("Add files in order to start scanning")
@@ -123,10 +105,15 @@ class MainWindow(wx.Frame):
 		
 		if newstats.get('filesHashed') != self.duplicateFiles:
 			#This is the line we *should* call
-			# self.duplicateFileView.updateProgress(self.controller.getDuplicateFiles())
+			#self.duplicateFileView.updateProgress(self.controller.getDuplicateFiles())
 			#This is what we do instead, because the view hasn't yet been refactored
 			#I died a little bit inside when I wrote this line of code.
-			self.controller.refreshDuplicateFileOutput(self.controller.uniquity.duplicateFilesIndex)
+			#self.controller.refreshDuplicateFileOutput(self.controller.uniquity.duplicateFilesIndex)
+			
+			#And this is what we end up calling
+			self.mainDupView.view.updateParentDirs(self.controller.hashObjects)
+			self.mainDupView.view.updateView(self.controller.getDuplicateFiles())
+			
 			self.updatePanel.updateProgress(newstats)
 			self.duplicateFiles = newstats.get("filesHashed")
 		self.updateTimer.Start(self.UPDATE_INTERVAL)
