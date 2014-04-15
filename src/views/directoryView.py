@@ -2,11 +2,11 @@ import wx
 
 class DirectoryView(wx.Panel):
 	
-	def __init__(self, parent, scanParents, toolbar):
+	def __init__(self, parent, fileObjects, toolbar):
 		wx.Panel.__init__(self, parent)
 		self.parent = parent
 		self.toolbar = toolbar
-		self.scanParents = scanParents
+		self.fileObjects = fileObjects
 		
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 		#self.directoryListings = wx.TextCtrl(self.directoryPanel, style=wx.TE_MULTILINE|wx.TE_READONLY)
@@ -21,7 +21,7 @@ class DirectoryView(wx.Panel):
 	
 	def updatePanel(self):
 		self.dirs.ClearAll()
-		for each in self.scanParents:
+		for each in self.fileObjects:
 			self.dirs.InsertStringItem(0, each.getFilename())	
 		
 	def enableRemoveTool(self, e):
