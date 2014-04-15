@@ -1,7 +1,18 @@
+import wx
 
-class simpleDupView(object):
+import baseDupFileView
+
+#This is supposed to be a simpler, more friendly duplicate file view. However, 
+#since it doesn't work well with displaying lots of files, (and the code is somewhat hacky) 
+#I think it will be retired. Last changes happened Apr 15th, 2014. 
+#
+#The last version to use it was 0.3.0. It's kept here in case we decide to refactor,
+#and use it again.
+
+class simpleDupView(BaseDupFileView, wx.ListCtrl):
 	
 	def __init__(self):
+		#Window setup
 		self.panel = wx.Panel(self.tabHolder)
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)		
 		self.listCtrlOutput = wx.ListCtrl(self.panel, -1, style=wx.LC_REPORT | wx.LC_NO_HEADER)
@@ -9,6 +20,12 @@ class simpleDupView(object):
 		self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.toolbar.disableDupFileTools, self.listCtrlOutput)
 		self.sizer.Add(self.listCtrlOutput, 100, flag=wx.EXPAND | wx.ALL)
 		self.panel.SetSizer(self.sizer)
+		
+		#Records to display
+		self.numRecords = 100
+		self.objectMap = {}
+		# self.log = logging.getLogger(config)
+		
 	
 	# def setDupFileOutputBackgroundColor(self, string, wxcolor):
 	# 	itemID = self.listCtrlOutputMap.get(('', unicode(string)), -1)
@@ -39,7 +56,7 @@ class simpleDupView(object):
 	#Note: filenames are in unicode
 	def getSelectedDups(self):
 		selectedFiles = []
-		selected = self.getSelectedInListCtrl(self.listCtrlOutput)
+		selected = self.__getSelectedInListCtrl(self.listCtrlOutput)
 		if not selected:
 			#return the empty list, nothing was selected
 			return selectedFiles
@@ -56,7 +73,7 @@ class simpleDupView(object):
 					selectedFiles.append(filePath)
 		return selectedFiles
 			
-	def getSelectedInListCtrl(self, listctrl):
+	def __getSelectedInListCtrl(self, listctrl):
 		selection = []
 		# start at -1 to get the first selected item
 		current = -1
@@ -68,6 +85,20 @@ class simpleDupView(object):
 			selection.append(next)
 			current = next
 		return selection
+		
+	def __updateItems(self, newFiles):
+		pass
+		
+	def __updateItem(self, item):
+		pass
+
+	def simpleOutput(self, newlist):
+		
+		self.listCtrlOutput.ClearAll()
+		self.listCtrlOutput.InsertColumn(0, "Header Column", width=100)
+		self.listCtrlOutput.InsertColumn(1, "File Column", width=1000)
+		
+				
 
 	def refreshDuplicateFileOutput(self, dupDict=None):
 		if not dupDict:
@@ -127,18 +158,18 @@ class simpleDupView(object):
 	# 		return "(These things are huge)"
 
 
-	def refreshModelFileList(self):
-		#Go through a list of all the files we scanned, and make sure:
-		# 1. the file exists
-		# 2. the file is within the list of files to scan
-		def fileInMasterList(thefile):
-			for userDir in self.files:
-				print "THIS IS THE USER DRI> " + userDir
-				if userDir in thefile:
-					return True
-			return False
-
-		for eachList in self.uniquity.secondPass.values():
-			for eachFile in eachList:
-				if not fileInMasterList(eachFile) or not os.path.exists(eachFile):
-					eachList.remove(eachFile)
+	# def refreshModelFileList(self):
+	# 	#Go through a list of all the files we scanned, and make sure:
+	# 	# 1. the file exists
+	# 	# 2. the file is within the list of files to scan
+	# 	def fileInMasterList(thefile):
+	# 		for userDir in self.files:
+	# 			print "THIS IS THE USER DRI> " + userDir
+	# 			if userDir in thefile:
+	# 				return True
+	# 		return False
+	# 
+	# 	for eachList in self.uniquity.secondPass.values():
+	# 		for eachFile in eachList:
+	# 			if not fileInMasterList(eachFile) or not os.path.exists(eachFile):
+	# 				eachList.remove(eachFile)
