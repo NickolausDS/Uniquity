@@ -86,7 +86,7 @@ class Uniquity:
 	#Returns all duplicate files, as a giant list of smaller duplicate file lists.
 	#ex. [[dupfilename1, dupfilename1copy], [dupfilename2, dupfilename2copy, dupfilename2anothercopy]]
 	def getDuplicateFiles(self):
-		return [self.duplicateFilesIndex.values()]
+		return self.duplicateFilesIndex.values()
 		
 	#Get a sorted list of files by size. nItems is how many items to fetch.
 	#The time for this method to execute is about O(2k) where k is nItems.	
