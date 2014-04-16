@@ -17,6 +17,8 @@ class Uniquity:
 	
 	def __init__(self):
 		self.log = logging.getLogger('.'.join((config.MAIN_LOG_NAME, 'Main')))
+		#A list of all the directories (and files) scanned by uniquity. 
+		self.rootDirs = []
 		#All files will be stored here as hashObjects, indexed by their filesize. The format follows:
 		# {10000: [so1, so2], 1234: [so3], 4567:[so4, so5, so6]}
 		self.scannedFiles = {}
@@ -71,17 +73,26 @@ class Uniquity:
 		
 		return exitStatus
 	
+	def addFile(self, theFile, block=False):
+		if self.theFile not in self.rootDirs:
+			newjob = fileObject.FileObject(theFile)
+			self.fileQueue.put(newjob)
+			self.log.debug("Adding new file: " + str(inputFiles))
+			if block:
+				self.__waitUntilFinished()
+			return True
+		else:
+			return False
 		
 	def addFiles(self, inputFiles, block=False):
 		for each in inputFiles:
-			newjob = fileObject.FileObject(each)
-			self.fileQueue.put(newjob)
-			self.log.debug("Adding new file(s): " + str(inputFiles))
-		
-		if block == True:
-			while not fileQueue.empty() and not hashQueue.empty():
-				time.sleep(config.UPDATE_INTERVAL)
-			self.log.info("Uniquity finished all jobs.")
+			addFile(each, block)
+			
+			
+	def __waitUntilFinished(self):
+		while not fileQueue.empty() and not hashQueue.empty():
+			time.sleep(config.UPDATE_INTERVAL)
+		self.log.info("Uniquity finished all jobs.")
 
 	#Returns all duplicate files, as a giant list of smaller duplicate file lists.
 	#ex. [[dupfilename1, dupfilename1copy], [dupfilename2, dupfilename2copy, dupfilename2anothercopy]]
