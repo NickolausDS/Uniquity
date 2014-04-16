@@ -1,6 +1,8 @@
 import wx
 
 import abc
+from wx.lib.pubsub import pub
+
 
 
 class ReportDupFileView(wx.ListCtrl):
@@ -37,11 +39,18 @@ class ReportDupFileView(wx.ListCtrl):
 
 		self.parentDirs = []
 		self.files = []
+		self.selected = []
 		# self.SetItemCount(10000)
+
+	#These should be moved to a parent superclass once that gets written
+	def onAllItemsDeselected(self):
+		pub.sendMessage("dupview.allitemsdeselected")
 		
+	def onItemSelected(self):
+		pub.sendMessage("dupview.itemselected")
 
 	def getSelected(self):
-		pass
+		return [self.files[each] for each in self.selected]
 
 	def updateView(self, files):
 		self.files = []
@@ -71,6 +80,9 @@ class ReportDupFileView(wx.ListCtrl):
 
 	def OnItemSelected(self, event):
 		self.currentItem = event.m_itemIndex
+		self.selected.append(event.m_itemIndex)
+		if len(self.selected) > 1:
+			self.onItemSelected()
         # self.log.WriteText('OnItemSelected: "%s", "%s", "%s", "%s"\n' %
         #                    (self.currentItem,
         #                     self.GetItemText(self.currentItem),
@@ -79,18 +91,19 @@ class ReportDupFileView(wx.ListCtrl):
 
 	def OnItemActivated(self, event):
 		self.currentItem = event.m_itemIndex
-		self.log.debug("User selected item %s, Top Item: %s", self.GetItemText(self.currentItem), self.GetTopItem())
+		# self.log.debug("User selected item %s, Top Item: %s", self.GetItemText(self.currentItem), self.GetTopItem())
 		# self.log.WriteText("OnItemActivated: %s\nTopItem: %s\n" %
 		             # (self.GetItemText(self.currentItem), self.GetTopItem()))
 
-	def getColumnText(self, index, col):
-		#Old values
-		item = self.GetItem(index, col)
-		print "DEBUG ITEM: " + str(item)
-		return item.GetText()
+	# def getColumnText(self, index, col):
+	# 	#Old values
+	# 	item = self.GetItem(index, col)
+	# 	return item.GetText()
 
 	def OnItemDeselected(self, evt):
-		pass
+		self.selected.remove(event.m_itemIndex)
+		if len(self.selected) == 0:
+			self.onAllItemsDeselected()
 		# self.log.WriteText("OnItemDeselected: %s" % evt.m_itemIndex)
 
 	#-----------------------------------------------------------------
@@ -105,7 +118,8 @@ class ReportDupFileView(wx.ListCtrl):
 			return self.files[item].niceSizeAndDesc
 		elif col == 2:
 			return self.files[item].strongHash
-		return "Item %d, column %d" % (item, col)
+		else:
+			return "Item %d, column %d" % (item, col)
 
 	def OnGetItemImage(self, item):
 		# if item % 3 == 0:
