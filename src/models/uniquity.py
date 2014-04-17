@@ -18,7 +18,7 @@ class Uniquity:
 	def __init__(self):
 		self.log = logging.getLogger('.'.join((config.MAIN_LOG_NAME, 'Main')))
 		#A list of all the directories (and files) scanned by uniquity. 
-		self.rootDirs = []
+		self.rootFileObjects = []
 		#All files will be stored here as hashObjects, indexed by their filesize. The format follows:
 		# {10000: [so1, so2], 1234: [so3], 4567:[so4, so5, so6]}
 		self.scannedFiles = {}
@@ -74,10 +74,11 @@ class Uniquity:
 		return exitStatus
 	
 	def addFile(self, theFile, block=False):
-		if self.theFile not in self.rootDirs:
+		if theFile not in self.rootFileObjects:
 			newjob = fileObject.FileObject(theFile)
 			self.fileQueue.put(newjob)
-			self.log.debug("Adding new file: " + str(inputFiles))
+			self.rootFileObjects.append(newjob)
+			self.log.debug("Adding new file: " + str(theFile))
 			if block:
 				self.__waitUntilFinished()
 			return True
@@ -88,6 +89,9 @@ class Uniquity:
 		for each in inputFiles:
 			addFile(each, block)
 			
+	#Get the files previously added files (in filename format)
+	def getFiles(self):
+		return [each.filename for each in self.rootFileObjects]
 			
 	def __waitUntilFinished(self):
 		while not fileQueue.empty() and not hashQueue.empty():
@@ -113,7 +117,7 @@ class Uniquity:
 		
 	def getUpdate(self):
 		self.stats.update(self.fileManager.stats)
-		self.stats.update(self.hasher.stats)
+		self.stats.update(self.hasher.stats)		
 		return self.stats
 		
 	#Update our current progress completing the scan
