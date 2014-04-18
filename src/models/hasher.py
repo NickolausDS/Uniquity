@@ -29,15 +29,16 @@ class Hasher(threading.Thread):
 		self.weakHashAlgorithm = config.WEAK_HASH
 		self.strongHashAlgorithm = config.STRONG_HASH
 		self.blockSize = config.BLOCK_SIZE
-		
-		#Used for counting stats
-		self.stats = {}
-		self.stats['filesHashed'] = 0
-		self.stats['sizeHashed'] = 0
-		self.stats['currentHashFile'] = None
-		self.stats['hasherStatus'] = "idle"
-		self.stats['hashedFiles'] = verifiedFiles
-		
+
+		#Stats
+		self.status = "Idle"
+		self.hashed = 0
+		self.hashedSize = 0
+		self.duplicates = 0
+		self.duplicateSize = 0
+		self.unique = 0
+		self.uniqueSize = 0
+		self.current = None
 	
 	@property
 	def weakHashAlgorithm(self):
@@ -66,23 +67,19 @@ class Hasher(threading.Thread):
 		while True:	
 			try:
 				#grabs host from fileQueue
-				nextSO = self.hashQueue.get(True, self.UPDATE_INTERVAL)
-				self.stats['hasherStatus'] = 'running'
-				self.log.info("Verifying File: %s", nextSO.getFilename())
-				self.hash(nextSO)
+				self.current = self.hashQueue.get(True, self.UPDATE_INTERVAL)
+				self.status = 'running'
+				self.__hash(self.current)
 				self.hashQueue.task_done()
 				if self.hashQueue.empty():
-					self.stats['hasherStatus'] = 'idle'
-					self.stats['currentHashFile'] = ''
-					self.log.info("Hasher finished current queue: %d hashed, %d bytes", 
-						self.stats['filesHashed'],
-						self.stats['sizeHashed']
-						)
+					self.status = "Done"
+					self.current = None
+					self.log.info("Hasher finished current queue.")
 					self.__update(True)
 				else:
 					self.__update()
 			except Queue.Empty:
-				self.stats['hasherStatus'] = 'idle'
+				pass
 			except Exception as e:
 				self.log.exception(e)
 				
@@ -91,10 +88,7 @@ class Hasher(threading.Thread):
 				break
 
 
-	def hash(self, ho):
-		self.currentSizeHashed = 0
-		self.currentFile = ho.filename
-		
+	def __hash(self, ho):		
 		#Note: the weak hasher is a function, the strong hasher is an object
 		#For more info, see zlib and hashlib for weak and strong hashes respectfully
 		weakHasher = self.weakHashAlgorithm
@@ -113,7 +107,7 @@ class Hasher(threading.Thread):
 					weakHash = weakHasher(buf, weakHash)
 					strongHasher.update(buf)
 					#Tell the world what we're up to
-					self.currentSizeHashed += len(buf)
+					self.hashedSize += len(buf)
 					self.__update()
 					if self.__shouldShutdown():
 						return
@@ -151,10 +145,10 @@ class Hasher(threading.Thread):
 			self.lastUpdateTime = time.time()
 			self.log.debug("Progress Update!")
 			
-			del self.stats['hashedFiles']
-			statsCopy = copy.deepcopy(self.stats)
-			statsCopy['hashedFiles'] = self.verifiedFiles
-			self.stats['hashedFiles'] = self.verifiedFiles
+			# del self.stats['hashedFiles']
+			# statsCopy = copy.deepcopy(self.stats)
+			# statsCopy['hashedFiles'] = self.verifiedFiles
+			# self.stats['hashedFiles'] = self.verifiedFiles
 			
 			#Consider moving this work onto a different thread. It doesn't really
 			#make sense for the hasher to do this work, and it's CPU intensive.
@@ -162,7 +156,14 @@ class Hasher(threading.Thread):
 			self.duplicateFilesSortedIndex.sort(reverse=True)
 			self.duplicateFilesNewItems = []
 			
-			self.updateCallback(statsCopy)	
+			# self.updateCallback(statsCopy)
+			
+	def getStats(self):
+		return (	self.status, self.current, 
+					self.hashed, self.hashedSize,
+					self.duplicates, self.duplicateSize,
+					self.unique, self.uniqueSize
+					)	
 	
 	#Note: This method hasn't been tested, or the speed increase of the above in the _update 
 	#method. Date: 04/07/2014
@@ -170,11 +171,13 @@ class Hasher(threading.Thread):
 		return [self.duplicateFiles[item] for item in self.duplicateFilesStortedIndex[0:nItems]]
 		
 	def __addFile(self, newho):
-		#Check for 'collisions', files already present because they're the same size
+		#Check if a record already exists
 		record = self.verifiedFiles.get(newho.hashes, None)
-		#If there's no record, there is no collision
+		#If there's no record, this file is unique
 		if record == None:
 			self.verifiedFiles[newho.hashes] = [newho]
+			self.unique += 1
+			self.uniqueSize += newho.size
 		#Add record to the queue to be hashed
 		else:
 			#Make sure we don't add the record twice
@@ -185,11 +188,15 @@ class Hasher(threading.Thread):
 			#Add the record		
 			record.append(newho)
 			self.log.info("Duplicate file found: %s.", newho.filename)
+			self.duplicates += 1
+			self.duplicateSize += newho.size
 			if len(record) == 2:
 				self.duplicateFiles[record[0].hashes] = record
 				self.duplicateFilesNewItems.append(record[0].size)
-		self.stats['filesHashed'] += 1
-		self.stats['sizeHashed'] += newho.getSize()
-		self.stats['currentHashFile'] = newho.getBasename()
+				self.unique -= 1
+				self.uniqueSize -= newho.size
+		self.hashed += 1
+		self.hashedSize += newho.getSize()
+		self.current = newho.getBasename()
 				
 		

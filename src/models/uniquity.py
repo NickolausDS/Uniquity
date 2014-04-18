@@ -74,8 +74,8 @@ class Uniquity:
 		return exitStatus
 	
 	def addFile(self, theFile, block=False):
-		if theFile not in self.rootFileObjects:
-			newjob = fileObject.FileObject(theFile)
+		newjob = fileObject.FileObject(theFile)
+		if newjob not in self.rootFileObjects:
 			self.fileQueue.put(newjob)
 			self.rootFileObjects.append(newjob)
 			self.log.debug("Adding new file: " + str(theFile))
@@ -86,8 +86,28 @@ class Uniquity:
 			return False
 		
 	def addFiles(self, inputFiles, block=False):
+		retval = []
 		for each in inputFiles:
-			addFile(each, block)
+			retval.append(addFile(each, block))
+		return retval
+			
+	def removeFile(self, thefile):	
+		fo = fileObject.FileObject(thefile)
+		if fo in self.rootFileObjects:
+			self.rootFileObjects.remove(fo)
+			self.log.critical("File '%s' not actually removed from model," + 
+			" functionality not implemented yet!")
+			return True
+		return False
+		
+			
+			
+	def removeFiles(self, files):
+		retval = []
+		for each in files:
+			retval.append(self.removeFile(each))
+		return retval
+		
 			
 	#Get the files previously added files (in filename format)
 	def getFiles(self):
@@ -116,9 +136,39 @@ class Uniquity:
 		return False
 		
 	def getUpdate(self):
-		self.stats.update(self.fileManager.stats)
-		self.stats.update(self.hasher.stats)		
-		return self.stats
+		"""
+		(
+			(uniquity status)
+			(fileManager status, current file, files scanned, total scan size)
+			(	hasher status, current file, 
+				files hashed, total hashed size,
+				number of duplicates, duplicates size,
+				number of uniques,	unique size
+			)
+		)
+		
+		"""
+		if not self.isIdle():
+			status = "running"
+		else:
+			status = "idle"
+		uniquityStats = (status,)
+		fms = self.__buildUpdatePackage(self.fileManager.getStats())
+		has = self.__buildUpdatePackage(self.hasher.getStats())
+		return (uniquityStats, fms, has)
+		
+	def __buildUpdatePackage(self, pak):
+		retval = []
+		for each in pak:
+			if type(each) == type(int):
+				retval.append(unicode(each))
+			elif type(each) == type(fileObject.FileObject):
+				retval.append(each.basename)
+			elif type(each) == type(None):
+				retval.append(u"")
+			else:
+				retval.append(unicode(each))
+		return tuple(retval)
 		
 	#Update our current progress completing the scan
 	#Docs regarding the contense of newProgress need to be added

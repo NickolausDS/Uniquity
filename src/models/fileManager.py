@@ -23,14 +23,15 @@ class FileManager(threading.Thread):
 		self.SHUTDOWN_FLAG = False
 		self.lastUpdateTime = time.time()
 
-		#STATS
-		self.stats = {}
-		self.stats['scannedFiles'] = self.files
-		self.stats['filesScanned'] = 0
-		self.stats['sizeScanned'] = 0
-		self.stats['currentScanFile'] = None
-		self.stats['scannerStatus'] = "idle"
-		self.stats['possibleDuplicates'] = 0
+		self.status = "Idle"
+		self.scanned = 0
+		self.scannedSize = 0
+		# #Possible future feature stats!
+		# self.possibleDuplicates = 0
+		# self.possibleDuplicateSize = 0
+		# self.possibleUnique = 0
+		# self.possibleUniqueSize = 0
+		self.current = None
 
 	def run(self):
 		while True:
@@ -44,17 +45,14 @@ class FileManager(threading.Thread):
 				self.fileQueue.task_done()
 				self.log.debug("Finished scanning: %s.", nextFileObject.getFilename())
 				if self.fileQueue.empty():
-					self.stats['scannerStatus'] = 'idle'
-					self.stats['currentScanFile'] = ''
-					self.log.info("Scanner finished current queue: %d scanned, %d bytes", 
-						self.stats['filesScanned'],
-						self.stats['sizeScanned']
-						)
+					self.status = "Done"
+					self.current = None
+					self.log.info("Scanner finished current queue")
 					self.__update(True)	
 				else:
 					self.__update()
 			except Queue.Empty:
-				self.stats['scannerStatus'] = "idle"
+				pass
 			except Exception as e:
 				self.log.exception(e)
 				
@@ -64,7 +62,7 @@ class FileManager(threading.Thread):
 
 	#Scan a parent file
 	def __scan(self, fileObject):
-		self.stats['scannerStatus'] = 'running'
+		self.status = 'running'
 		for root, dirs, files in os.walk(fileObject.getFilename()):
 			for filename in files:
 				try:
@@ -84,7 +82,7 @@ class FileManager(threading.Thread):
 					return
 				else:
 					self.__update()
-		self.stats['currentScanFile'] = None
+		self.current = None
 		
 		
 	#Returns true if it should shutdwon		
@@ -101,14 +99,13 @@ class FileManager(threading.Thread):
 			self.lastUpdateTime = time.time()
 			self.log.debug("Progress Update!")
 			
-			del self.stats['scannedFiles']
-			statsCopy = copy.deepcopy(self.stats)
-			statsCopy['scannedFiles'] = self.files
-			self.stats['scannedFiles'] = self.files
-			
-			self.updateCallback(statsCopy)
+			self.updateCallback(self.getStats)
+	
+	def getStats(self):
+		return (self.status, self.current, self.scanned, self.scannedSize)
 			
 	def __addFile(self, newho):
+		self.current = newho
 		fileSize = newho.getSize()
 		#Check for 'collisions', files already present because they're the same size we
 		#will store all files of the same size in lists called 'records'
@@ -135,7 +132,7 @@ class FileManager(threading.Thread):
 			#is greator than 2, because we will have previously scanned them.
 			if len(record) == 2:
 				self.hashQueue.put(record[0])
-				
-		self.stats['sizeScanned'] += fileSize
-		self.stats['filesScanned'] += 1
+
+		self.scanned += 1
+		self.scannedSize += fileSize
 		
