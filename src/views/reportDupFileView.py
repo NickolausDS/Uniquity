@@ -113,7 +113,7 @@ class ReportDupFileView(wx.ListCtrl):
 	# source, but for this demo we'll just calculate them
 	def OnGetItemText(self, item, col):
 		if col == 0:
-			return self.files[item].getShortname(self.findParentDir(self.files[item]))
+			return self.files[item].filename
 		elif col == 1:
 			return self.files[item].niceSizeAndDesc
 		elif col == 2:

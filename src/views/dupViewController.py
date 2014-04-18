@@ -1,23 +1,22 @@
+import mainDupView
 
-class DuplicateFileViewController(object):
+
+class DupViewController(object):
 	
-	def __init__(self):
-		pass
-		
-	#Change to a different view
-	def changeView(self, newView):
-		pass
-		
-	#Output operations
-	#The model has data to output to the screen	
+	def __init__(self, model, viewParent):
+		self.uniquity = model
+		#We don't need to hold on to the parent, just initialize from it.
+		self.view = mainDupView.MainDupView(viewParent)
 	
+	# @property
+	# def uniquity(self):
+	# 	if not self._uniquity:
+	# 		raise AttributeError("The model was never set with setModel()")
 	
-	def updateDups(self, files):
-		pass
+	# def setModel(self, model):
+	# 	self._uniquity = model	
 		
-	#Input operations
-	#The user clicked on some part of the view, and we require data from the view
-	def getSelected(self, files):
-		pass
+	def update(self):
+		self.view.update(self.uniquity.getDuplicateFiles())
 		
 	

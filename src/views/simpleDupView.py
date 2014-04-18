@@ -8,6 +8,8 @@ import baseDupFileView
 #
 #The last version to use it was 0.3.0. It's kept here in case we decide to refactor,
 #and use it again.
+from wx.lib.pubsub import pub
+
 
 class simpleDupView(BaseDupFileView, wx.ListCtrl):
 	

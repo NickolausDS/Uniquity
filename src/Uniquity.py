@@ -19,10 +19,7 @@ sys.path.insert(0, os.path.abspath(BASEPATH))
 
 import data.config
 import models.uniquity
-import views.mainView
+#import views.mainView
+import views.controller
 
-
-app = wx.App(False)
-frame = views.mainView.MainWindow(None, "Uniquity -- The Unique File Analyzer")
-app.MainLoop()
-exit(0)
+uniquity = views.controller.Controller()

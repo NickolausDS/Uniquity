@@ -7,10 +7,9 @@ import reportDupFileView
 
 class MainDupView(wx.Notebook):
 	
-	def __init__(self, parent, maincontroller):
+	def __init__(self, parent):
 		wx.Notebook.__init__(self, parent, -1, style=(wx.NB_TOP))
 		self.parent = parent
-		self.mainController = maincontroller
 		
 		# self.dupController = dupViewController.DupViewController()
 		self.view = reportDupFileView.ReportDupFileView(self)
@@ -21,12 +20,14 @@ class MainDupView(wx.Notebook):
 		# for each in views:
 		# 	self.AddPage(each, each.name)
 		
-		
-		def getSelected(self):
-			"""Get the currently selected files from the view."""
-			return	
+	def update(self, files):
+		self.view.updateView(files)
+	
+	def getSelected(self):
+		"""Get the currently selected files from the view."""
+		return	
 
 
-		def updateView(self, files):
-			"""Update the view with a new set of files"""
-			return
+	def updateView(self, files):
+		"""Update the view with a new set of files"""
+		return
