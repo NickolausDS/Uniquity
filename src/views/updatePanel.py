@@ -22,14 +22,14 @@ class UpdatePanel(wx.Panel):
 		column1 = [
 					["Scanned: ", 		(1,2)], 
 					["Size Scanned: ", 	(1,3)], 
-					["Current File: ", 	(1,0)],
+					["Current File: ", 	(1,1)],
 					# ["",				(-1,-1)] #Empty 
 					]
 					
 		column2 = [
 					["Verified: ", 		(2,2) ],
 					["Size Verified: ", (2,3) ], 
-					["Current File: ", 	(2,0) ],
+					["Current File: ", 	(2,1) ],
 					# ["",				(-1,-1)]
 					]		
 				

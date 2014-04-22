@@ -95,6 +95,6 @@ class Controller(object):
 		self.mainView.updateDirView(self.uniquity.getFiles())
 		
 	def updateViewProgress(self):
-		self.mainView.updateUpdatePanel(self.uniquity.getUpdate())
+		self.mainView.updateUpdatePanel(self.uniquity.getUpdate(fileFormat="basename"))
 		self.dupVC.update()
 	

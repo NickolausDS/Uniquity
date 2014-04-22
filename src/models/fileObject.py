@@ -4,6 +4,16 @@ import math
 
 
 class FileObject(object):
+	fileFormats = {
+				"basename":lambda fo: fo.basename,
+				"shortname":lambda fo: fo.basename,
+				"fullname":lambda fo: fo.filename
+				}
+	sizeFormats = {
+				"raw":lambda x: x,
+				"formatted":lambda x: FileObject.getNiceSizeInBytes(x, desc=False),
+				"formatteddesc":lambda x: FileObject.getNiceSizeInBytes(x, desc=True)
+	}
 	
 	def __init__(self, filename):
 		self._filename = unicode(filename)
@@ -86,6 +96,12 @@ class FileObject(object):
 		
 	@staticmethod
 	def getNiceSizeInBytes(size, desc=False):
+		if size == 0:
+			retVal = "0 Bytes "
+			if desc:
+				retVal += "(Empty)"
+			return retVal
+		
 		mag = int(math.floor(math.log(size, 1000)))
 		#There was a strange problem once, where the round() builtin function
 		#started complaining about an Integer Value Error for seemingly no reason

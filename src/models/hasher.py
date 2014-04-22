@@ -8,6 +8,8 @@ import copy
 
 import data.config as config
 
+import fileObject
+
 class Hasher(threading.Thread):
 	def __init__(self, hashQueue, verifiedFiles, duplicateFiles, updateCallback):
 		threading.Thread.__init__(self)
@@ -158,11 +160,18 @@ class Hasher(threading.Thread):
 			
 			# self.updateCallback(statsCopy)
 			
-	def getStats(self):
-		return (	self.status, self.current, 
-					self.hashed, self.hashedSize,
-					self.duplicates, self.duplicateSize,
-					self.unique, self.uniqueSize
+	def getStats(self, sizeFormat="formatted", fileFormat="fullname"):
+		sizeFormatter = fileObject.FileObject.sizeFormats.get(sizeFormat)
+		fileFormatter = fileObject.FileObject.fileFormats.get(fileFormat)
+		
+		cur = ""
+		if self.current:
+			cur = fileFormatter(self.current)
+
+		return (	self.status, cur, 
+					unicode(self.hashed), sizeFormatter(self.hashedSize),
+					unicode(self.duplicates), sizeFormatter(self.duplicateSize),
+					unicode(self.unique), sizeFormatter(self.uniqueSize)
 					)	
 	
 	#Note: This method hasn't been tested, or the speed increase of the above in the _update 
@@ -197,6 +206,6 @@ class Hasher(threading.Thread):
 				self.uniqueSize -= newho.size
 		self.hashed += 1
 		self.hashedSize += newho.getSize()
-		self.current = newho.getBasename()
+		self.current = newho
 				
 		

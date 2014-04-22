@@ -101,8 +101,14 @@ class FileManager(threading.Thread):
 			
 			self.updateCallback(self.getStats)
 	
-	def getStats(self):
-		return (self.status, self.current, self.scanned, self.scannedSize)
+	def getStats(self, sizeFormat="formatted", fileFormat="fullname"):
+		sizeFormatter = fileObject.FileObject.sizeFormats.get(sizeFormat)
+		fileFormatter = fileObject.FileObject.fileFormats.get(fileFormat)
+		
+		cur = ""
+		if self.current:
+			cur = fileFormatter(self.current)
+		return (self.status, cur, unicode(self.scanned), sizeFormatter(self.scannedSize))
 			
 	def __addFile(self, newho):
 		self.current = newho

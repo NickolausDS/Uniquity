@@ -13,7 +13,9 @@ import hasher
 import fileObject
 import data.config as config
 
+
 class Uniquity:
+	
 	
 	def __init__(self):
 		self.log = logging.getLogger('.'.join((config.MAIN_LOG_NAME, 'Main')))
@@ -135,7 +137,13 @@ class Uniquity:
 			return True
 		return False
 		
-	def getUpdate(self):
+	def getFileFormats(self):
+		return self.fileObject.FileObject.fileFormats.keys()
+		
+	def getSizeFormats(self):
+		return self.fileObject.FileObject.sizeFormats.keys()	
+		
+	def getUpdate(self, sizeFormat="formatted", fileFormat="fullname"):
 		"""
 		(
 			(uniquity status)
@@ -153,22 +161,9 @@ class Uniquity:
 		else:
 			status = "idle"
 		uniquityStats = (status,)
-		fms = self.__buildUpdatePackage(self.fileManager.getStats())
-		has = self.__buildUpdatePackage(self.hasher.getStats())
+		fms = self.fileManager.getStats(sizeFormat, fileFormat)
+		has = self.hasher.getStats(sizeFormat, fileFormat)
 		return (uniquityStats, fms, has)
-		
-	def __buildUpdatePackage(self, pak):
-		retval = []
-		for each in pak:
-			if type(each) == type(int):
-				retval.append(unicode(each))
-			elif type(each) == type(fileObject.FileObject):
-				retval.append(each.basename)
-			elif type(each) == type(None):
-				retval.append(u"")
-			else:
-				retval.append(unicode(each))
-		return tuple(retval)
 		
 	#Update our current progress completing the scan
 	#Docs regarding the contense of newProgress need to be added
