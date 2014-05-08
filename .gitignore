@@ -9,5 +9,6 @@ release/build
 release/dist
 release/*.dmg
 release/*.app
+config_override.py
 testing/test_files
 testing/testenv

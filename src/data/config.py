@@ -22,13 +22,19 @@ BLOCK_SIZE = 65536
 
 #LOGGING
 MAIN_LOG_NAME = "Uniquity"
-MAIN_LOG_LEVEL = logging.DEBUG
+MAIN_LOG_LEVEL = logging.WARNING
 
 GUI_LOG_NAME = "GUI"
-GUI_LOG_LEVEL = logging.DEBUG
+GUI_LOG_LEVEL = logging.WARNING
 
 #console logging
 LOG_TO_CONSOLE = True
-CONSOLE_LOG_LEVEL = logging.DEBUG
+CONSOLE_LOG_LEVEL = logging.WARNING
 CONSOLE_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
+#allow for someone to override config with a separte file. 
+try:
+	from config_override import *
+except ImportError:
+	pass
 
