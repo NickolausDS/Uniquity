@@ -25,7 +25,7 @@ class MainDupView(wx.Notebook):
 	
 	def getSelected(self):
 		"""Get the currently selected files from the view."""
-		return	
+		return self.view.getSelected()	
 
 
 	def updateView(self, files):

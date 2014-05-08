@@ -20,13 +20,6 @@ class Controller(object):
 		app = wx.App(False)
 		self.mainView = mainView.MainWindow(None, "Uniquity -- The Unique File Analyzer")
 		
-		#Setup various events we will respond to
-		pub.subscribe(self.addFiles, "main.addfiles")
-		pub.subscribe(self.removeFiles, "main.removefiles")
-		pub.subscribe(self.updateViewProgress, "main.updaterequest")
-		pub.subscribe(self.mainView.enableDupFileTools, "dupview.itemselected")
-		pub.subscribe(self.mainView.disableDupFileTools, "dupview.allitemsdeselected")
-		
 		#Setup the model. Setting it up after the view is convienient, as no model code
 		#will run if the view has a sudden crash (happens when testing new views)
 		self.uniquity = uniquity.Uniquity()
@@ -34,6 +27,17 @@ class Controller(object):
 		#Setup DupVC (for showing duplicate files)
 		self.dupVC = dupViewController.DupViewController(self.uniquity, self.mainView.mainSplitter)
 		self.mainView.setDupView(self.dupVC.view)
+		
+		#Setup various events we will respond to
+		pub.subscribe(self.addFiles, "main.addfiles")
+		pub.subscribe(self.removeFiles, "main.removefiles")
+		pub.subscribe(self.updateViewProgress, "main.updaterequest")
+		pub.subscribe(self.mainView.enableDupFileTools, "dupview.itemselected")
+		pub.subscribe(self.mainView.disableDupFileTools, "dupview.allitemsdeselected")
+		pub.subscribe(self.mainView.status, "dupview.status")
+		pub.subscribe(self.mainView.statusError, "dupview.statuserror")
+		pub.subscribe(self.dupVC.viewSelected, "main.viewdupfiles")
+		pub.subscribe(self.dupVC.deleteSelected, "main.deletedupfiles")
 		
 		#Run the main gui loop
 		app.MainLoop()

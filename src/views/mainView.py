@@ -32,6 +32,8 @@ class MainWindow(wx.Frame, wx.FileDropTarget):
 		self.toolbar = Toolbar(self)
 		self.toolbar.Bind(wx.EVT_TOOL, self.addFile, self.toolbar.add)
 		self.toolbar.Bind(wx.EVT_TOOL, self.removeFiles, self.toolbar.remove)
+		self.toolbar.Bind(wx.EVT_TOOL, self.viewFiles, self.toolbar.view)
+		self.toolbar.Bind(wx.EVT_TOOL, self.deleteFiles, self.toolbar.delete)
 		self.updatePanel = updatePanel.UpdatePanel(self)
 		
 		self.mainSplitter = wx.SplitterWindow(self, -1, style=wx.SP_3DSASH, size=(300,300))
@@ -108,6 +110,12 @@ class MainWindow(wx.Frame, wx.FileDropTarget):
 
 	def removeFiles(self, e):
 		pub.sendMessage("main.removefiles", files=self.directoryView.getSelected())
+		
+	def viewFiles(self, e):
+		pub.sendMessage("main.viewdupfiles")
+		
+	def deleteFiles(self, e):
+		pub.sendMessage("main.deletedupfiles")
 		
 	def timerUpdate(self, e):
 		pub.sendMessage("main.updaterequest")
