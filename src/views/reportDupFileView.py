@@ -81,7 +81,7 @@ class ReportDupFileView(wx.ListCtrl):
 	def OnItemSelected(self, event):
 		self.currentItem = event.m_itemIndex
 		self.selected.append(event.m_itemIndex)
-		if len(self.selected) > 1:
+		if len(self.selected) >= 1:
 			self.onItemSelected()
         # self.log.WriteText('OnItemSelected: "%s", "%s", "%s", "%s"\n' %
         #                    (self.currentItem,
@@ -101,7 +101,7 @@ class ReportDupFileView(wx.ListCtrl):
 	# 	return item.GetText()
 
 	def OnItemDeselected(self, evt):
-		self.selected.remove(event.m_itemIndex)
+		self.selected.remove(evt.m_itemIndex)
 		if len(self.selected) == 0:
 			self.onAllItemsDeselected()
 		# self.log.WriteText("OnItemDeselected: %s" % evt.m_itemIndex)

@@ -24,6 +24,8 @@ class Controller(object):
 		pub.subscribe(self.addFiles, "main.addfiles")
 		pub.subscribe(self.removeFiles, "main.removefiles")
 		pub.subscribe(self.updateViewProgress, "main.updaterequest")
+		pub.subscribe(self.mainView.enableDupFileTools, "dupview.itemselected")
+		pub.subscribe(self.mainView.disableDupFileTools, "dupview.allitemsdeselected")
 		
 		#Setup the model. Setting it up after the view is convienient, as no model code
 		#will run if the view has a sudden crash (happens when testing new views)

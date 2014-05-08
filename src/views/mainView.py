@@ -120,6 +120,14 @@ class MainWindow(wx.Frame, wx.FileDropTarget):
 		if len(self.directoryView.getSelected()) == 0:
 			self.toolbar.EnableTool(wx.ID_REMOVE, False)
 			
+	def enableDupFileTools(self):
+		self.toolbar.EnableTool(wx.ID_VIEW_DETAILS, True)
+		self.toolbar.EnableTool(wx.ID_DELETE, True)
+		
+	def disableDupFileTools(self):
+		self.toolbar.EnableTool(wx.ID_VIEW_DETAILS, False)
+		self.toolbar.EnableTool(wx.ID_DELETE, False)
+			
 	#Will fail if dup view has not been added
 	def splitView(self):
 		self.mainSplitter.SplitVertically(self.directoryView, self.dupView)
