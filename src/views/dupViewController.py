@@ -1,5 +1,9 @@
-import mainDupView
+import wx
+from wx.lib.pubsub import pub
+import logging
 
+import data.config as config
+import mainDupView
 
 class DupViewController(object):
 	
@@ -7,16 +11,15 @@ class DupViewController(object):
 		self.uniquity = model
 		#We don't need to hold on to the parent, just initialize from it.
 		self.view = mainDupView.MainDupView(viewParent)
-	
-	# @property
-	# def uniquity(self):
-	# 	if not self._uniquity:
-	# 		raise AttributeError("The model was never set with setModel()")
-	
-	# def setModel(self, model):
-	# 	self._uniquity = model	
+		self.stats = self.uniquity.getUpdate()
+			
+
 		
 	def update(self):
-		self.view.update(self.uniquity.getDuplicateFiles())
+		newStats = self.uniquity.getUpdate()
+		if self.stats != newStats:
+			self.stats = newStats
+			self.view.update(self.uniquity.getDuplicateFiles())
+			
 		
 	
