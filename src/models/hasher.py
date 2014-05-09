@@ -205,7 +205,6 @@ class Hasher(threading.Thread):
 				self.unique -= 1
 				self.uniqueSize -= newho.size
 		self.hashed += 1
-		self.hashedSize += newho.getSize()
 		self.current = newho
 				
 		
