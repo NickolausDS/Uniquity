@@ -28,10 +28,10 @@ class ReportDupFileView(wx.ListCtrl):
 		self.idx2 = self.il.Add(empty)
 		self.SetImageList(self.il, wx.IMAGE_LIST_SMALL)
 
-		# self.attr1 = wx.ListItemAttr()
-		# self.attr1.SetBackgroundColour("yellow")
-		# self.attr2 = wx.ListItemAttr()
-		# self.attr2.SetBackgroundColour("light blue")
+		self.altAttr = wx.ListItemAttr()
+		#Light grey background colour
+		self.altAttr.SetBackgroundColour((220,220,220))
+
 
 		self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected)
 		self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated)
@@ -39,6 +39,7 @@ class ReportDupFileView(wx.ListCtrl):
 
 		self.parentDirs = []
 		self.files = []
+		self.uniqueGroupIndex = []
 		self.selected = []
 		# self.SetItemCount(10000)
 
@@ -54,8 +55,10 @@ class ReportDupFileView(wx.ListCtrl):
 
 	def updateView(self, files):
 		self.files = []
+		self.uniqueGroupIndex = []
 		for each in files:
 			self.files.extend(each)
+			self.uniqueGroupIndex.append(each[0].hashes)
 		self.SetItemCount(len(self.files))
 		
 	def updateParentDirs(self, dirs):
@@ -128,10 +131,8 @@ class ReportDupFileView(wx.ListCtrl):
 		return self.idx2
 
 	def OnGetItemAttr(self, item):
-		# if item % 3 == 1:
-		# 	return self.attr1
-		# elif item % 3 == 2:
-		# 	return self.attr2
-		# else:
-		return None	
+		if self.uniqueGroupIndex.index(self.files[item].hashes) % 2 == 1:
+			return self.altAttr
+		else:
+			return None	
 	
