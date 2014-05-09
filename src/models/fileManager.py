@@ -74,7 +74,7 @@ class FileManager(threading.Thread):
 					else:
 						self.log.warning("Skipping non-regular File: %s", newho.filename)
 				except OSError as ose:
-					self.log.warning("File disappeared before we could scan it: %s", newho)
+					self.log.warning("File could not be scanned: %s", str(ose))
 				except Exception as e:
 					self.log.exception(e)
 				#check if we should stop what we are doing, otherwise continue
