@@ -69,7 +69,7 @@ class FileManager(threading.Thread):
 					newho = hashObject.HashObject(os.path.join(root,filename))
 					if newho.isRegularFile():
 						self.__addFile(newho)
-					elif os.islink(newho.filename):
+					elif os.path.islink(newho.filename):
 						self.log.info("Skipping Symbolic Link: %s", newho.filename)
 					else:
 						self.log.warning("Skipping non-regular File: %s", newho.filename)
