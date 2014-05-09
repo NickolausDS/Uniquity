@@ -1,3 +1,19 @@
+##VERSION 0.4.0-alpha
+
+Added features
+
+* New layout for duplicate files!
+	* This layout is much faster, and doesn't bog down on large scans
+	* Added color-coding between differing files
+* New layout for update panel
+
+Fixed
+
+* Large scans no longer slow down
+* Update panel displaying oddly with long filenames
+* Various other small bugs
+
+
 ##VERSION 0.3.0-alpha
 
 Added features
