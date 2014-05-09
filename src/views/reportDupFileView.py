@@ -40,18 +40,20 @@ class ReportDupFileView(wx.ListCtrl):
 		self.parentDirs = []
 		self.files = []
 		self.uniqueGroupIndex = []
-		self.selected = []
 		# self.SetItemCount(10000)
-
-	#These should be moved to a parent superclass once that gets written
-	def onAllItemsDeselected(self):
-		pub.sendMessage("dupview.allitemsdeselected")
 		
-	def onItemSelected(self):
-		pub.sendMessage("dupview.itemselected")
-
+		
 	def getSelected(self):
-		return [self.files[each] for each in self.selected]
+		selection = []
+		# start at -1 to get the first selected item
+		current = -1
+		while True:
+			next = self.GetNextSelected(current)
+			if next == -1:
+				break
+			selection.append(self.files[next])
+			current = next
+		return selection
 
 	def updateView(self, files):
 		self.files = []
@@ -82,15 +84,8 @@ class ReportDupFileView(wx.ListCtrl):
     
 
 	def OnItemSelected(self, event):
-		self.currentItem = event.m_itemIndex
-		self.selected.append(event.m_itemIndex)
-		if len(self.selected) >= 1:
-			self.onItemSelected()
-        # self.log.WriteText('OnItemSelected: "%s", "%s", "%s", "%s"\n' %
-        #                    (self.currentItem,
-        #                     self.GetItemText(self.currentItem),
-        #                     self.getColumnText(self.currentItem, 1),
-        #                     self.getColumnText(self.currentItem, 2)))
+		if len(self.getSelected()) >= 1:
+			pub.sendMessage("dupview.itemselected")
 
 	def OnItemActivated(self, event):
 		self.currentItem = event.m_itemIndex
@@ -104,10 +99,8 @@ class ReportDupFileView(wx.ListCtrl):
 	# 	return item.GetText()
 
 	def OnItemDeselected(self, evt):
-		self.selected.remove(evt.m_itemIndex)
-		if len(self.selected) == 0:
-			self.onAllItemsDeselected()
-		# self.log.WriteText("OnItemDeselected: %s" % evt.m_itemIndex)
+		if len(self.getSelected()) == 0:
+			pub.sendMessage("dupview.allitemsdeselected")
 
 	#-----------------------------------------------------------------
 	# These methods are callbacks for implementing the "virtualness"
