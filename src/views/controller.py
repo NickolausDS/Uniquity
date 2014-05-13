@@ -17,7 +17,7 @@ class Controller(object):
 		self.log = logging.getLogger('.'.join((config.GUI_LOG_NAME, 'controller')))
 			
 		#Setup the view
-		app = wx.App(False)
+		self.app = wx.App(False)
 		self.mainView = mainView.MainWindow(None, "Uniquity -- The Unique File Analyzer")
 		
 		#Setup the model. Setting it up after the view is convienient, as no model code
@@ -38,10 +38,10 @@ class Controller(object):
 		pub.subscribe(self.mainView.statusError, "dupview.statuserror")
 		pub.subscribe(self.dupVC.viewSelected, "main.viewdupfiles")
 		pub.subscribe(self.dupVC.deleteSelected, "main.deletedupfiles")
-		
-		#Run the main gui loop
-		app.MainLoop()
-		
+	
+	def mainLoop(self):
+		#Run the main gui loop. This will run until Uniquity shuts down.
+		self.app.MainLoop()
 		#We are finished, release all model resources
 		self.uniquity.shutdown()
 	

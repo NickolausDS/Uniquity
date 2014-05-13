@@ -16,5 +16,8 @@ sys.path.insert(0, os.path.abspath(BASEPATH))
 #With path setup, we can finally import what we need from the project
 import views.controller
 
-#Start the main Uniquity GUI
+#Initialize the main Uniquity GUI
 uniquity = views.controller.Controller()
+
+#Start!
+uniquity.mainLoop()
