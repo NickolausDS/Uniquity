@@ -3,6 +3,8 @@ import wx
 import abc
 from wx.lib.pubsub import pub
 
+import logging
+import data.config as config
 
 
 class ReportDupFileView(wx.ListCtrl):
@@ -11,7 +13,8 @@ class ReportDupFileView(wx.ListCtrl):
 			self, parent, -1, 
 			style=wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_HRULES|wx.LC_VRULES
 		)
-
+		self.log = logging.getLogger('.'.join((config.GUI_LOG_NAME, 'dupView.dupController.controller')))
+		
 
 		self.InsertColumn(0, "Name")
 		self.InsertColumn(1, "Size")
@@ -56,12 +59,40 @@ class ReportDupFileView(wx.ListCtrl):
 		return selection
 
 	def updateView(self, files):
-		self.files = []
-		self.uniqueGroupIndex = []
+		newFiles = []
+		newUniqueGroupIndex = []
 		for each in files:
-			self.files.extend(each)
-			self.uniqueGroupIndex.append(each[0].hashes)
+			newFiles.extend(each)
+			newUniqueGroupIndex.append(each[0].hashes)
+		
+		#Preserve selections	
+		oldSelected = self.__deselectOldList()
+		self.files = newFiles
+		self.__selectNewList(oldSelected)
+		
+		#Update meta info
+		self.uniqueGroupIndex = newUniqueGroupIndex
 		self.SetItemCount(len(self.files))
+		
+	#Only works if the old file list still exists!	
+	def __deselectOldList(self):
+		#get current selection list
+		selectedObjects = self.getSelected()
+		#deselect old list
+		current = -1
+		while True:
+			next = self.GetNextSelected(current)
+			if next == -1:
+				break
+			self.Select(next, on=0)
+			current = next
+		return selectedObjects
+
+	def __selectNewList(self, oldSelectedObjects):
+		names = [each.filename for each in oldSelectedObjects]
+		for idx, aFile in enumerate(self.files):
+			if aFile.filename in names:
+				self.Select(idx)		
 		
 	def updateParentDirs(self, dirs):
 		self.parentDirs = dirs
