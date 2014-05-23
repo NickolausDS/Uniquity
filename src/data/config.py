@@ -1,8 +1,16 @@
 import os
+import sys
 import logging
 
-#Note: trailing slash shouldn't be there.
-IMAGE_DIR="assets"
+#Set basepath for access to various resources. Basepath can change
+#depending on where the user executed this file, or if they executed
+#it from a bundled 'frozen' app, so basepath is always needed.
+if getattr(sys, 'frozen', False):
+    BASEPATH = os.path.dirname(sys.executable)
+else:
+    BASEPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+
+IMAGE_DIR = os.path.join(BASEPATH, "assets")
 
 
 #Time in seconds for uniquity to post progress updates, on both

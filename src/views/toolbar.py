@@ -7,19 +7,7 @@ from wx.lib.pubsub import pub
 
 import logging
 
-from data.config import IMAGE_DIR as BASE_IMAGE_DIR
-
-#This is a hack, since I don't have time to figure out how this should be set in 
-#the config. 
-if getattr(sys, 'frozen', False):
-    # we are running in a |PyInstaller| bundle
-    BASEPATH = sys._MEIPASS
-else:
-	# we are running in a normal Python environment
-	BASEPATH = os.path.dirname(__file__)
-	BASEPATH = os.path.abspath(os.path.join(BASEPATH, os.pardir))
-
-IMAGE_DIR = os.path.join(BASEPATH, BASE_IMAGE_DIR)
+from data.config import IMAGE_DIR
 
 class Toolbar(wx.ToolBar):
 
@@ -58,7 +46,7 @@ class Toolbar(wx.ToolBar):
 		fullpath = os.path.join(IMAGE_DIR, filename)
 		#wxPython will throw a terrible tissy fit if it tries to load a file that doesn't exist.
 		if not os.path.exists(fullpath):
-			raise ValueError("Failed to load image %s!" % fullpath)
+			raise ValueError("Failed to load image %s!" % os.path.abspath(fullpath))
 		return wx.Bitmap(fullpath)
 
 		
