@@ -1,21 +1,27 @@
 #!/bin/bash
 
 # set up your app name, version number, and background image file name
-APP_NAME="Uniquity"
-VERSION=`grep "VERSION" ../changelog.md | head -n 1 | sed -e "s/##VERSION //g"`
+APP_NAME="$1"
+VERSION="$2"
 DMG_BACKGROUND_IMG="Background.png"
 
-#Set some things for the build process
-PYINSTALLER_SPEC_FILE="Uniquity.spec"
-PYINSALLER_OPTIONS="--windowed"
-
-
-###--- BUILD PROCESSS ---###
-pyinstaller &> /dev/null
-if [[ $? -eq 127 ]]
+if [ -z "$APP_NAME" ]
 then
-	echo "You need to install pyinstaller, please do so using 'pip install pyinstaller"
+	echo "PACKAGING FAILED"
+	echo "App name was null, please pass the app name as the first argument"
+	echo "$APP_NAME"
+	echo ""
 	exit
+elif [ stat "$APP_NAME "&> /dev/null ]
+then
+	echo "PACKAGING FAILED"
+	echo "App name didn't exist where expected:"
+	echo `pwd`
+	echo ""
+else
+	clear
+	echo "Packaging for release..."
+	APP_NAME=`echo $APP_NAME | sed -e "s/.app\///"`
 fi
 
 #Eject the old uniquity disk if it is still there
@@ -24,22 +30,6 @@ then
 	diskutil eject "disk"$(diskutil list | grep Uniquity | sed "s/.*disk//") > /dev/null
 	echo "Ejected old Uniquity disk so we can build a new one."
 fi	
-#Clean the directory is it isn't clean	
-rm -rf build/ dist/ Uniquity.app/ "${APP_NAME} ${VERSION}.dmg" &> /dev/null
-
-pyinstaller ${PYINSTALLER_SPEC_FILE} ${PYINSTALLER_OPTIONS}
-if [[ $? -ne 0 ]]
-then
-	echo "Ops, there was a problem with the build. Exiting..."
-	exit
-else
-	clear
-	echo "BUILD SUCCESS!!!"
-	echo "Now Packaging for release..."
-fi
-
-mv dist/Uniquity.app ./Uniquity.app
-rm -rf build/ dist/
 
 ###--- PACKAGING THE DMG ---###
 # by Andy Maloney
@@ -55,7 +45,7 @@ fi
 # you should not need to change these
 APP_EXE="${APP_NAME}.app/Contents/MacOS/${APP_NAME}"
 
-VOL_NAME="${APP_NAME} ${VERSION}"   # volume name will be "SuperCoolApp 1.0.0"
+VOL_NAME="${APP_NAME}"   # volume name will be "SuperCoolApp 1.0.0"
 DMG_TMP="${VOL_NAME}-temp.dmg"
 DMG_FINAL="${VOL_NAME}.dmg"         # final DMG name will be "SuperCoolApp 1.0.0.dmg"
 STAGING_DIR="./Install"             # we copy all our stuff into this dir
