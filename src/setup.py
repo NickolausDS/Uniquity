@@ -2,9 +2,15 @@ import sys
 import os
 from cx_Freeze import setup, Executable
 
-import subprocess
-import shutil
+#Setup the packager
+BASEPATH = os.path.dirname(__file__)
+PACKAGEPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+PACKAGEPATH = os.path.join(PACKAGEPATH, "release")
+sys.path.append(PACKAGEPATH)
+import packager
 
+
+#Setup name and version
 name = "Uniquity"
 
 chlog = open("../changelog.md", "r")
@@ -13,9 +19,7 @@ version = chlog.readline().split()[1]
 chlog.close()
 
 
-# PROJECTPATH = "release"
-# PROJECTPATH = os.path.normpath(PROJECTPATH)
-# includefiles = [os.path.join(PROJECTPATH, 'assets/')]
+#Files to include within the package
 includefiles = ["assets"]
 
 # Dependencies are automatically detected, but it might need fine tuning.
@@ -40,16 +44,10 @@ setup(  name = name,
         options = {"build_exe": build_exe_options},
         executables = [Executable("Uniquity.py", base=base)])
 
-if sys.platform == "darwin":
-	print "Preparing to package for mac"
-	packagename = '-'.join([name, version]) + ".app"
-	pathname = "../release/"
-	if os.path.exists(pathname+packagename):
-		print "Removing old build..."
-		shutil.rmtree(pathname+packagename)
-	shutil.move("build/" + packagename, "../release/" + packagename)
-	print packagename
-	os.chdir(pathname)
-	print os.path.abspath(".")
-	print subprocess.call(["../release/mac_build.sh", packagename], shell=True)
+#Package the application
+curpath = os.path.abspath(".")
+buildpath =  os.path.abspath("build")
+os.chdir(PACKAGEPATH)
+pkg = packager.Packager("-".join((name, version)), buildpath, version)
+os.chdir(curpath)
 	
