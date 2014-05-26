@@ -1,3 +1,10 @@
+##VERSION 0.4.1-alpha
+
+Added features
+
+* Added support for preserving selections after updates
+
+
 ##VERSION 0.4.0-alpha
 
 Added features
