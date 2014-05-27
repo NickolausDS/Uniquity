@@ -28,6 +28,7 @@ class Uniquity:
 		#Basically the same as hashedFiles, but we only add duplicate enteries.
 		self.duplicateFilesIndex = {}
 		
+		self.UPDATE_INTERVAL = config.UPDATE_INTERVAL
 		self.updateCallbackFunction = None
 		
 		#Both these queues handle jobs. The file Queue is for the file manager, meant for scanning
@@ -125,14 +126,27 @@ class Uniquity:
 		return [each.filename for each in self.rootFileObjects]
 			
 	def __waitUntilFinished(self):
-		while not self.fileQueue.empty() and not self.hashQueue.empty():
-			time.sleep(config.UPDATE_INTERVAL)
+		time.sleep(self.UPDATE_INTERVAL)
+		while self.fileManager.isRunning() or self.hasher.isRunning():
+			time.sleep(self.UPDATE_INTERVAL)
 		self.log.info("Uniquity finished all jobs.")
 
 	#Returns all duplicate files, as a giant list of smaller duplicate file lists.
 	#ex. [[dupfilename1, dupfilename1copy], [dupfilename2, dupfilename2copy, dupfilename2anothercopy]]
 	def getDuplicateFiles(self):
 		return self.duplicateFilesIndex.values()
+		
+	def getSortedDuplicateFiles(self, sort_attr):
+		dupFileList = [] 
+		
+		for each in self.duplicateFilesIndex.values():
+			dupFileList.extend(each)
+		# for idx, filelist in enumerate(self.duplicateFilesIndex.values()):
+		# 	for each in filelist:
+		# 		dupFileList.append((idx, each))
+		
+		# return dupFileList		
+		return sorted(dupFileList, key=operator.attrgetter(sort_attr))
 		
 	#Get a sorted list of files by size. nItems is how many items to fetch.
 	#The time for this method to execute is about O(2k) where k is nItems.	

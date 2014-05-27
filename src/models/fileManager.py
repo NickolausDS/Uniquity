@@ -60,9 +60,16 @@ class FileManager(threading.Thread):
 				self.log.info("Shutting down...")
 				break
 
+	def isRunning(self):
+		if not self.fileQueue.empty or self.status == "Running":
+			return True
+		else:
+			return False
+
+
 	#Scan a parent file
 	def __scan(self, fileObject):
-		self.status = 'running'
+		self.status = 'Running'
 		for root, dirs, files in os.walk(fileObject.getFilename()):
 			for filename in files:
 				try:

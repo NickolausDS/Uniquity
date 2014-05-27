@@ -70,7 +70,7 @@ class Hasher(threading.Thread):
 			try:
 				#grabs host from fileQueue
 				self.current = self.hashQueue.get(True, self.UPDATE_INTERVAL)
-				self.status = 'running'
+				self.status = 'Running'
 				self.__hash(self.current)
 				self.hashQueue.task_done()
 				if self.hashQueue.empty():
@@ -89,6 +89,11 @@ class Hasher(threading.Thread):
 				self.log.info("Shutting down...")
 				break
 
+	def isRunning(self):
+		if not self.hashQueue.empty or self.status == "Running":
+			return True
+		else:
+			return False
 
 	def __hash(self, ho):		
 		#Note: the weak hasher is a function, the strong hasher is an object
