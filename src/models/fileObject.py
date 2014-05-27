@@ -47,16 +47,17 @@ class FileObject(object):
 	def niceSizeAndDesc(self):
 		return self.getNiceSizeInBytes(self.size, True)	
 		
-	def __str__(self):
-		return str(self._filename)
-		
 	def __unicode__(self):
 		return unicode(self._filename)
 		
 	def __eq__(self, other):
+		"""returns true only if filenames match"""
 		if self._filename == other.filename:
 			return True
 		return False
+		
+	def __repr__(self):
+		return repr((self.filename, self.size, "parentdir"))
 		
 	def isRegularFile(self):
 		return stat.S_ISREG(self.stat.st_mode)	

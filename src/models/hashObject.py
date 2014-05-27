@@ -13,6 +13,7 @@ class HashObject(fileObject.FileObject):
 		self._strongHashFunction = None
 		
 	def __eq__(self, other):
+		"""Extends eq of fileObject, any object with matching hashes is also equal"""
 		if super.__eq__(other):
 			return True
 		elif self.weakHashFunction != other.weakHashFunction:
@@ -27,20 +28,31 @@ class HashObject(fileObject.FileObject):
 					return True
 		return False
 
+	def __repr__(self):
+		"""Overrides the parents repr to provide more information"""
+		return repr((	self.filename, self.size, 
+						"parentdir", self.weakHash, self.weakHashFunction, 
+						self.strongHash, self.strongHashFunction,
+						))
+
 	@property
 	def hashes(self):
+		"""two hex-string tuple of weak and strong hash respectively"""
 		return (self.weakHash, self.strongHash)
 
 	@property
 	def strongHash(self):
+		"""hex-string representation for strong hash"""
 		return self._strongHash	
 	
 	@property
 	def strongHashFunction(self):
+		"""the name of the hash algorithm"""
 		return self._strongHashFunction
 		
 	# @strongHash.setter
 	def setStrongHash(self, strongHash, strongHashFunction):
+		"""Set the hex-string representation for strong hash, along with the algorithm used"""
 		self._strongHash = strongHash
 		self._strongHashFunction = repr(strongHashFunction)
 

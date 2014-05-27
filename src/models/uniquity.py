@@ -76,6 +76,10 @@ class Uniquity:
 		return exitStatus
 	
 	def addFile(self, theFile, block=False):
+		"""Add a single file (string), and return a boolean for success
+		Keyword arguments:
+		block -- don't return until scanning and verification has finished (default False)
+		"""
 		newjob = fileObject.FileObject(theFile)
 		if newjob not in self.rootFileObjects:
 			self.fileQueue.put(newjob)
@@ -88,9 +92,13 @@ class Uniquity:
 			return False
 		
 	def addFiles(self, inputFiles, block=False):
+		"""Add a list of files, and return a list of booleans for success
+		Keyword arguments:
+		block -- don't return until scanning and verification has finished (default False)
+		"""
 		retval = []
 		for each in inputFiles:
-			retval.append(addFile(each, block))
+			retval.append(self.addFile(each, block))
 		return retval
 			
 	def removeFile(self, thefile):	
@@ -113,10 +121,11 @@ class Uniquity:
 			
 	#Get the files previously added files (in filename format)
 	def getFiles(self):
+		"""Return a list of the root file objects previously added to Uniquity"""
 		return [each.filename for each in self.rootFileObjects]
 			
 	def __waitUntilFinished(self):
-		while not fileQueue.empty() and not hashQueue.empty():
+		while not self.fileQueue.empty() and not self.hashQueue.empty():
 			time.sleep(config.UPDATE_INTERVAL)
 		self.log.info("Uniquity finished all jobs.")
 
@@ -130,7 +139,7 @@ class Uniquity:
 	#
 	#NOTE: This method hasn't been tested. Apr 7th 2014.
 	def getDuplicateFilesSortedBySize(self, nItems=0):
-		return hasher.getDuplicateFilesSortedBySize(nItems)
+		return self.hasher.getDuplicateFilesSortedBySize(nItems)
 		
 	def isIdle(self):
 		if self.fileQueue.empty() and self.hashQueue.empty():
