@@ -37,7 +37,11 @@ class FileObject(object):
 		
 	@property
 	def size(self):
-		return self.stat.st_size
+		return self.stat.st_size	
+		
+	@property
+	def data(self):
+		return (self.filename, self.size)
 		
 	@property
 	def niceSize(self):
@@ -57,7 +61,7 @@ class FileObject(object):
 		return False
 		
 	def __repr__(self):
-		return repr((self.filename, self.size, "parentdir"))
+		return repr(self.data)
 		
 	def isRegularFile(self):
 		return stat.S_ISREG(self.stat.st_mode)	

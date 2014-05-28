@@ -30,10 +30,14 @@ class HashObject(fileObject.FileObject):
 
 	def __repr__(self):
 		"""Overrides the parents repr to provide more information"""
-		return repr((	self.filename, self.size, 
-						"parentdir", self.weakHash, self.weakHashFunction, 
+		return repr(self.data)
+
+	@property
+	def data(self):
+		return super(HashObject, self).data + ( 
+						self.weakHash, self.weakHashFunction, 
 						self.strongHash, self.strongHashFunction,
-						))
+						)
 
 	@property
 	def hashes(self):
