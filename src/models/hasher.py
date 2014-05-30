@@ -9,6 +9,7 @@ import copy
 import data.config as config
 
 import fileObject
+import cursor
 
 class Hasher(threading.Thread):
 	def __init__(self, hashQueue, verifiedFiles, duplicateFiles, updateCallback):
@@ -21,6 +22,7 @@ class Hasher(threading.Thread):
 		#Indexes used for efficiency
 		self.duplicateFilesSortedIndex = []
 		self.duplicateFilesNewItems = []
+		self.cursor = None
 		
 		self.UPDATE_INTERVAL = config.UPDATE_INTERVAL
 		self.log = logging.getLogger('.'.join((config.MAIN_LOG_NAME, 'Hasher')))
@@ -66,6 +68,7 @@ class Hasher(threading.Thread):
 			raise ValueError("Could not load hash algorithm '%s' from hashlib library." % newalg)
 
 	def run(self):
+		self.cursor = cursor.Cursor()
 		while True:	
 			try:
 				#grabs host from fileQueue
@@ -122,8 +125,8 @@ class Hasher(threading.Thread):
 					buf = theFile.read(self.blockSize)
 				theFile.close()
 				#set the weak hash
-				ho.setWeakHash("%X"%(weakHash & 0xFFFFFFFF), self.weakHashAlgorithm )
-				ho.setStrongHash(strongHasher.hexdigest(), self.strongHashAlgorithm )
+				ho.setWeakHash("%X"%(weakHash & 0xFFFFFFFF), weakHasher.__name__ )
+				ho.setStrongHash(strongHasher.hexdigest(), strongHasher.name )
 				self.__addFile(ho)
 			except IOError as ioe:
 				#We will consider these as predictable failures, and so log them as errors
@@ -185,6 +188,7 @@ class Hasher(threading.Thread):
 		return [self.duplicateFiles[item] for item in self.duplicateFilesStortedIndex[0:nItems]]
 		
 	def __addFile(self, newho):
+		self.cursor.save('FILE', newho)
 		#Check if a record already exists
 		record = self.verifiedFiles.get(newho.hashes, None)
 		#If there's no record, this file is unique
@@ -211,5 +215,7 @@ class Hasher(threading.Thread):
 				self.uniqueSize -= newho.size
 		self.hashed += 1
 		self.current = newho
+		
+		
 				
 		

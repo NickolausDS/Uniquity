@@ -12,6 +12,10 @@ import fileManager
 import hasher
 import fileObject
 import data.config as config
+import cursor
+
+import time
+import operator
 
 
 class Uniquity:
@@ -27,6 +31,15 @@ class Uniquity:
 		self.hashedFiles = {}
 		#Basically the same as hashedFiles, but we only add duplicate enteries.
 		self.duplicateFilesIndex = {}
+		
+		
+		#cleanup old tables.
+		if config.DBNAME != ":memory:" and os.path.exists(config.DBNAME):
+			os.remove(config.DBNAME)
+			
+		#Setup the db.	
+		self.cursor = cursor.Cursor()
+		self.cursor.setupTables()
 		
 		self.UPDATE_INTERVAL = config.UPDATE_INTERVAL
 		self.updateCallbackFunction = None
@@ -48,6 +61,7 @@ class Uniquity:
 		
 		#Where we store update information and such about the hasher and fileManager
 		self.stats = {}
+		
 
 	#try for graceful shutdown. Returns true if successful, false if it quit with jobs running.
 	def shutdown(self):
@@ -72,8 +86,8 @@ class Uniquity:
 				exitStatus = False
 		else:
 			self.log.warning("Called for hasher to shutdown, but hasher is not running!")
-			exitStatus = False
-		
+			exitStatus = False		
+								
 		return exitStatus
 	
 	def addFile(self, theFile, block=False):
@@ -136,17 +150,13 @@ class Uniquity:
 	def getDuplicateFiles(self):
 		return self.duplicateFilesIndex.values()
 		
-	def getSortedDuplicateFiles(self, sort_attr):
-		dupFileList = [] 
-		
-		for each in self.duplicateFilesIndex.values():
-			dupFileList.extend(each)
-		# for idx, filelist in enumerate(self.duplicateFilesIndex.values()):
-		# 	for each in filelist:
-		# 		dupFileList.append((idx, each))
-		
-		# return dupFileList		
-		return sorted(dupFileList, key=operator.attrgetter(sort_attr))
+	def getSortedDuplicateFiles(self, sort_attr="size"):		
+		return self.cursor.getDupData()
+		# #Alternative way to sort and return duplicate files
+		# dupFileList = [] 
+		# for each in self.duplicateFilesIndex.values():
+		# 	dupFileList.extend(each)		
+		# return sorted(dupFileList, key=operator.attrgetter(sort_attr))
 		
 	#Get a sorted list of files by size. nItems is how many items to fetch.
 	#The time for this method to execute is about O(2k) where k is nItems.	

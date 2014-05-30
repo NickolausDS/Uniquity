@@ -27,6 +27,8 @@ WEAK_HASH = "crc32"
 STRONG_HASH = "md5"
 #Amount of bytes read from a file per 'click' of the hasher when hashing files. 
 BLOCK_SIZE = 65536
+#Name of db for storing file metadata. Use ":memory: to store in memory instead of on disk"
+DBNAME = "uniquity.db"
 
 #LOGGING
 MAIN_LOG_NAME = "Uniquity"
