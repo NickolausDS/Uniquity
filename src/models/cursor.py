@@ -1,5 +1,7 @@
 import sqlite3
 import schema
+import time
+
 import os
 from data.config import DBNAME
 
@@ -14,6 +16,10 @@ class Cursor(object):
 	# 		cls._instance = super(Cursor, cls).__new__(cls, *args, **kwargs)
 	# 		cls.conn = sqlite3.connect("example.db")
 	# 	return cls._instance
+	
+	#Last time the db was committed to
+	lastCommit = -1
+	
 	
 	def __init__(self):
 		self.conn = sqlite3.connect(DBNAME)
@@ -43,6 +49,7 @@ class Cursor(object):
 				
 			cursor.execute(query)
 			self.conn.commit()
+			Cursor.lastCommit = time.time()
 		
 	def save(self, type, obj):		
 		if type not in schema.TYPES:
@@ -54,6 +61,7 @@ class Cursor(object):
 			query = "INSERT INTO %s VALUES (%s)" % (type, ",".join("?" * len(data)))	
 			self.cursor.execute(query, data)
 			self.conn.commit()
+			Cursor.lastCommit = time.time()
 	
 	def getDupData(self):
 		

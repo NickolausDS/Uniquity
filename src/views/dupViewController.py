@@ -23,7 +23,10 @@ class DupViewController(object):
 		newStats = self.uniquity.getUpdate()
 		if self.stats != newStats:
 			self.stats = newStats
-			self.view.update(self.uniquity.getDuplicateFiles())
+		newData = self.uniquity.getDuplicateFiles(onlyReturnNewData=True)
+		if newData:	
+			self.log.debug("Model returned new Duplicate data, updating View!")
+			self.view.update(newData)
 			
 	def viewSelected(self):
 		#We only support opening one file at a time

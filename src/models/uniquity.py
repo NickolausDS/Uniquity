@@ -41,6 +41,11 @@ class Uniquity:
 		self.cursor = cursor.Cursor()
 		self.cursor.setupTables()
 		
+		#A simple time check for when we last committed to the database
+		#Useful for determining if a caller *really* wants the same data
+		#in some methods
+		self.lastDBFetch = 0
+		
 		self.UPDATE_INTERVAL = config.UPDATE_INTERVAL
 		self.updateCallbackFunction = None
 		
@@ -147,10 +152,14 @@ class Uniquity:
 
 	#Returns all duplicate files, as a giant list of smaller duplicate file lists.
 	#ex. [[dupfilename1, dupfilename1copy], [dupfilename2, dupfilename2copy, dupfilename2anothercopy]]
-	def getDuplicateFiles(self):
+	def getDuplicateFiles(self, onlyReturnNewData=False):
+		if onlyReturnNewData and self.lastDBFetch > cursor.Cursor.lastCommit:
+			return None
+		self.lastDBFetch = time.time()
+		# return self.cursor.getDupData()
 		return self.duplicateFilesIndex.values()
 		
-	def getSortedDuplicateFiles(self, sort_attr="size"):		
+	def getSortedDuplicateFiles(self, sort_attr="size"):
 		return self.cursor.getDupData()
 		# #Alternative way to sort and return duplicate files
 		# dupFileList = [] 
