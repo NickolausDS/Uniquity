@@ -7,12 +7,12 @@ import reportDupFileView
 
 class MainDupView(wx.Notebook):
 	
-	def __init__(self, parent):
+	def __init__(self, parent, itemMap, UIDFunc):
 		wx.Notebook.__init__(self, parent, -1, style=(wx.NB_TOP))
 		self.parent = parent
 		
 		# self.dupController = dupViewController.DupViewController()
-		self.view = reportDupFileView.ReportDupFileView(self)
+		self.view = reportDupFileView.ReportDupFileView(self, itemMap, UIDFunc)
 		self.AddPage(self.view, "Detail")
 		
 		# views = self.dupController.getAllViews()

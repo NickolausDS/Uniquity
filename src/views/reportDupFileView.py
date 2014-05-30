@@ -8,7 +8,7 @@ import data.config as config
 
 
 class ReportDupFileView(wx.ListCtrl):
-	def __init__(self, parent):
+	def __init__(self, parent, itemMap, itemIDFunction):
 		wx.ListCtrl.__init__(
 			self, parent, -1, 
 			style=wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_HRULES|wx.LC_VRULES
@@ -26,7 +26,6 @@ class ReportDupFileView(wx.ListCtrl):
 		#For some reason, we need to make a blank image or the second
 		#column refuses to show up. I'm not sure why. Thanks Obama. 
 		self.il = wx.ImageList(16, 16)
-		# self.idx1 = self.il.Add(images.Smiles.GetBitmap())
 		empty = self.makeBlank()
 		self.idx2 = self.il.Add(empty)
 		self.SetImageList(self.il, wx.IMAGE_LIST_SMALL)
@@ -40,13 +39,11 @@ class ReportDupFileView(wx.ListCtrl):
 		self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated)
 		self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OnItemDeselected)
 
-		self.parentDirs = []
-		self.files = []
-		self.uniqueGroupIndex = []
-		# self.SetItemCount(10000)
+		self.items = []
+		self.itemMap = itemMap #See SetItemMap for details
+		self.uniqueIdentifyerFunction = itemIDFunction
 		
-		
-	def getSelected(self):
+	def getSelected(self, deselectList=False):
 		selection = []
 		# start at -1 to get the first selected item
 		current = -1
@@ -54,55 +51,31 @@ class ReportDupFileView(wx.ListCtrl):
 			next = self.GetNextSelected(current)
 			if next == -1:
 				break
-			selection.append(self.files[next])
+			selection.append(self.items[next])
+			if deselectList:
+				self.Select(next, on=0)
 			current = next
 		return selection
-
-	def updateView(self, files):
-		newFiles = []
-		newUniqueGroupIndex = []
-		for each in files:
-			newFiles.extend(each)
-			newUniqueGroupIndex.append(each[0].hashes)
-		
+	
+	def setItemMap(self, newMap):
+		self.itemMap = newMap
+	
+	def updateView(self, newItems):
 		#Preserve selections	
-		oldSelected = self.__deselectOldList()
-		self.files = newFiles
+		oldSelected = self.getSelected(deselectList=True)
+		self.items = newItems
 		self.__selectNewList(oldSelected)
 		
-		#Update meta info
-		self.uniqueGroupIndex = newUniqueGroupIndex
-		self.SetItemCount(len(self.files))
-		
-	#Only works if the old file list still exists!	
-	def __deselectOldList(self):
-		#get current selection list
-		selectedObjects = self.getSelected()
-		#deselect old list
-		current = -1
-		while True:
-			next = self.GetNextSelected(current)
-			if next == -1:
-				break
-			self.Select(next, on=0)
-			current = next
-		return selectedObjects
-
+		self.SetItemCount(len(self.items))
+	
 	def __selectNewList(self, oldSelectedObjects):
-		names = [each.filename for each in oldSelectedObjects]
-		for idx, aFile in enumerate(self.files):
-			if aFile.filename in names:
+		# names = [each.filename for each in oldSelectedObjects]
+		if not self.uniqueIdentifyerFunction:
+			raise ValueError("Unique item identifier function not set, unable to determine difference in items.")
+		oldUIDs = [self.uniqueIdentifyerFunction(each) for each in oldSelectedObjects]
+		for idx, item in enumerate(self.items):
+			if self.uniqueIdentifyerFunction(item) in oldUIDs:
 				self.Select(idx)		
-		
-	def updateParentDirs(self, dirs):
-		self.parentDirs = dirs
-
-	#Finds the parent dir, since that isn't built into fileObjects yet
-	def findParentDir(self, fileObject):
-		for each in self.parentDirs:
-			if fileObject.isParent(each):
-				return each
-		return fileObject
 
 	def makeBlank(self):
 		empty = wx.EmptyBitmap(16,16,32)
@@ -139,14 +112,16 @@ class ReportDupFileView(wx.ListCtrl):
 	# attributes and/or image based on values from some external data
 	# source, but for this demo we'll just calculate them
 	def OnGetItemText(self, item, col):
-		if col == 0:
-			return self.files[item].filename
-		elif col == 1:
-			return self.files[item].niceSizeAndDesc
-		elif col == 2:
-			return self.files[item].strongHash
-		else:
-			return "Item %d, column %d" % (item, col)
+		# itemColId = self.itemMap[col][item]
+		return self.items[item][self.itemMap[col]]
+		# if col == 0:
+		# 	return self.files[item].filename
+		# elif col == 1:
+		# 	return self.files[item].niceSizeAndDesc
+		# elif col == 2:
+		# 	return self.files[item].strongHash
+		# else:
+		# 	return "Item %d, column %d" % (item, col)
 
 	def OnGetItemImage(self, item):
 		# if item % 3 == 0:
@@ -154,9 +129,9 @@ class ReportDupFileView(wx.ListCtrl):
 		# else:
 		return self.idx2
 
-	def OnGetItemAttr(self, item):
-		if self.uniqueGroupIndex.index(self.files[item].hashes) % 2 == 1:
-			return self.altAttr
-		else:
-			return None	
+	# def OnGetItemAttr(self, item):
+	# 	if self.uniqueGroupIndex.index(self.files[item].hashes) % 2 == 1:
+	# 		return self.altAttr
+	# 	else:
+	# 		return None	
 	

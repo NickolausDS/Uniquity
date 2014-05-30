@@ -156,24 +156,8 @@ class Uniquity:
 		if onlyReturnNewData and self.lastDBFetch > cursor.Cursor.lastCommit:
 			return None
 		self.lastDBFetch = time.time()
-		# return self.cursor.getDupData()
-		return self.duplicateFilesIndex.values()
-		
-	def getSortedDuplicateFiles(self, sort_attr="size"):
 		return self.cursor.getDupData()
-		# #Alternative way to sort and return duplicate files
-		# dupFileList = [] 
-		# for each in self.duplicateFilesIndex.values():
-		# 	dupFileList.extend(each)		
-		# return sorted(dupFileList, key=operator.attrgetter(sort_attr))
-		
-	#Get a sorted list of files by size. nItems is how many items to fetch.
-	#The time for this method to execute is about O(2k) where k is nItems.	
-	#
-	#NOTE: This method hasn't been tested. Apr 7th 2014.
-	def getDuplicateFilesSortedBySize(self, nItems=0):
-		return self.hasher.getDuplicateFilesSortedBySize(nItems)
-		
+
 	def isIdle(self):
 		if self.fileQueue.empty() and self.hashQueue.empty():
 			return True

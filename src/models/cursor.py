@@ -65,7 +65,7 @@ class Cursor(object):
 	
 	def getDupData(self):
 		
-		query = """select filename, size from FILE where strongHash in (select strongHash from (select strongHash, count(*) as numdups from FILE group by strongHash order by numdups) where numdups>1) order by size DESC"""
+		query = """select * from FILE where strongHash in (select strongHash from (select strongHash, count(*) as numdups from FILE group by strongHash order by numdups) where numdups>1) order by size DESC"""
 		rows = self.cursor.execute(query)
 		return rows.fetchall()
 		
