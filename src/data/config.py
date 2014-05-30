@@ -28,7 +28,11 @@ STRONG_HASH = "md5"
 #Amount of bytes read from a file per 'click' of the hasher when hashing files. 
 BLOCK_SIZE = 65536
 #Name of db for storing file metadata. Use ":memory: to store in memory instead of on disk"
-DBNAME = "uniquity.db"
+DB_BASENAME = "uniquity.db"
+DB_DIR = os.path.join(BASEPATH, "data")
+DBNAME = os.path.join(DB_DIR, DB_BASENAME)
+if not os.path.exists(DB_DIR):
+	os.mkdir(DB_DIR)
 
 #LOGGING
 MAIN_LOG_NAME = "Uniquity"
