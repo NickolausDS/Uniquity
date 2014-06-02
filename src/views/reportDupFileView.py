@@ -42,6 +42,7 @@ class ReportDupFileView(wx.ListCtrl):
 		self.items = []
 		self.itemMap = itemMap #See SetItemMap for details
 		self.uniqueIdentifyerFunction = itemIDFunction
+		self.CURRENTLY_UPDATING_SELECTIONS = False
 		
 	def getSelected(self, deselectList=False):
 		selection = []
@@ -61,10 +62,13 @@ class ReportDupFileView(wx.ListCtrl):
 		self.itemMap = newMap
 	
 	def updateView(self, newItems):
+		
 		#Preserve selections	
+		self.CURRENTLY_UPDATING_SELECTIONS = True
 		oldSelected = self.getSelected(deselectList=True)
 		self.items = newItems
 		self.__selectNewList(oldSelected)
+		self.CURRENTLY_UPDATING_SELECTIONS = False
 		
 		self.SetItemCount(len(self.items))
 	
@@ -103,7 +107,7 @@ class ReportDupFileView(wx.ListCtrl):
 	# 	return item.GetText()
 
 	def OnItemDeselected(self, evt):
-		if len(self.getSelected()) == 0:
+		if not self.CURRENTLY_UPDATING_SELECTIONS and len(self.getSelected()) == 0:
 			pub.sendMessage("dupview.allitemsdeselected")
 
 	#-----------------------------------------------------------------
