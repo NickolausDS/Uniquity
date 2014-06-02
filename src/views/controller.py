@@ -22,7 +22,15 @@ class Controller(object):
 		
 		#Setup the model. Setting it up after the view is convienient, as no model code
 		#will run if the view has a sudden crash (happens when testing new views)
-		self.uniquity = uniquity.Uniquity()
+		self.uniquity = None
+		try:
+			self.uniquity = uniquity.Uniquity()
+		except Exception as e:
+			message = "Please install Uniquity before using it."
+			diag = wx.MessageBox(message,style=wx.OK | wx.ICON_EXCLAMATION)
+			self.mainView.Destroy()
+			return
+			
 		
 		#Setup DupVC (for showing duplicate files)
 		self.dupVC = dupViewController.DupViewController(self.uniquity, self.mainView.mainSplitter)
@@ -43,7 +51,8 @@ class Controller(object):
 		#Run the main gui loop. This will run until Uniquity shuts down.
 		self.app.MainLoop()
 		#We are finished, release all model resources
-		self.uniquity.shutdown()
+		if self.uniquity:
+			self.uniquity.shutdown()
 	
 	#Returns False on success, or the name of the file on failure (file already added)
 	def __addFile(self, filename):

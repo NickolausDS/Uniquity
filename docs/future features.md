@@ -6,7 +6,7 @@ Features are listed in no particular order.
 
 
 * Cross Platform Support
-	* Currently only Mac OSX is supported, add support to windows and mac
+	* Currently only Mac OSX is supported, add support to windows and linux
 * Better duplicate file reporting
 	* Allow for sorting by: 
 		* size
@@ -15,7 +15,11 @@ Features are listed in no particular order.
 	* Show actual number of duplicate files
 	* Show number of files to be verified
 * A GUI for reading log reports
-* In-GUI Version listing
 * Better File Menu Support
-* Include changelog in distribution
+* Include changelog in frozen distribution
+* Include version information in frozen distribution
+* Remove "flicker effect" that cropped up 
+* Better Packaging
+	* Option to build but not package
+	* When packaging, remove all temp materials when finished (better cleanup)
 

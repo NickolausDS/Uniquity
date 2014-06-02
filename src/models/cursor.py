@@ -1,9 +1,10 @@
 import sqlite3
 import schema
 import time
+import logging
 
 import os
-from data.config import DBNAME
+from data.config import DB_NAME, DB_DIR, MAIN_LOG_NAME
 
 
 class Cursor(object):
@@ -22,11 +23,35 @@ class Cursor(object):
 	
 	
 	def __init__(self):
-		self.conn = sqlite3.connect(DBNAME)
+		self.log = logging.getLogger('.'.join((MAIN_LOG_NAME, 'Main.Cursor')))
+		
+		try:
+			if not os.path.exists(DB_DIR):
+				os.mkdir(DB_DIR)
+			self.conn = sqlite3.connect(DB_NAME)
+		except Exception as e:
+			#Raising an exception here will halt the program. It happens
+			#when the user tries to run uniquity directly from a dmg where
+			#they don't have write access (ie, the db can't be written to)
+			#We'll do this until there is a workaround
+			raise UniquityDBException(str(e))
+		# except OSError as e:
+		# 	self.log.error("DB: %s", str(e))	
+		# 	self.log.info("Attempting to start database in memory...")
+		# 	self.conn = sqlite3.connect(":memory:")
+		# except sqlite3.OperationalError as soe:
+		# 	self.log.error("DB: %s", str(soe))	
+		# 	self.log.info("Attempting to start database in memory...")
+		# 	self.conn = sqlite3.connect(":memory:")
+		
 		self.cursor = self.conn.cursor()		
 		
 	def __del__(self):
-		self.conn.close()
+		try:
+			self.conn.close()
+		#Sometimes we get an attribute error if the conn wasn't inititalized
+		except AttributeError:
+			pass
 		
 	def close(self):
 		self.__del__()
@@ -102,4 +127,8 @@ class Cursor(object):
 		# 						'st_uid', 'st_gid', 'st_size',
 		# 						'st_atime', 'st_mtime', 'st_ctime']
 
-	
+class UniquityDBException(Exception):
+	def __init__(self, value):
+		self.value = value
+	def __str__(self):
+		return repr(self.value)

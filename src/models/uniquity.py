@@ -34,8 +34,11 @@ class Uniquity:
 		
 		
 		#cleanup old tables.
-		if config.DBNAME != ":memory:" and os.path.exists(config.DBNAME):
-			os.remove(config.DBNAME)
+		try:
+			if config.DB_NAME != ":memory:" and os.path.exists(config.DB_NAME):
+				os.remove(config.DB_NAME)
+		except Exception:
+			pass
 			
 		#Setup the db.	
 		self.cursor = cursor.Cursor()
@@ -208,4 +211,5 @@ class Uniquity:
 	#the more regular design pattern in the future, if you would like.	
 	def setUpdateCallback(self, funct):
 		self.updateCallbackFunction = funct
+		
 		

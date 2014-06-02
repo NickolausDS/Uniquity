@@ -27,12 +27,6 @@ WEAK_HASH = "crc32"
 STRONG_HASH = "md5"
 #Amount of bytes read from a file per 'click' of the hasher when hashing files. 
 BLOCK_SIZE = 65536
-#Name of db for storing file metadata. Use ":memory: to store in memory instead of on disk"
-DB_BASENAME = "uniquity.db"
-DB_DIR = os.path.join(BASEPATH, "data")
-DBNAME = os.path.join(DB_DIR, DB_BASENAME)
-if not os.path.exists(DB_DIR):
-	os.mkdir(DB_DIR)
 
 #LOGGING
 MAIN_LOG_NAME = "Uniquity"
@@ -45,6 +39,12 @@ GUI_LOG_LEVEL = logging.WARNING
 LOG_TO_CONSOLE = True
 CONSOLE_LOG_LEVEL = logging.WARNING
 CONSOLE_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
+#Name of db for storing file metadata. Use ":memory: to store in memory instead of on disk"
+DB_BASENAME = "uniquity.db"
+DB_DIR = os.path.join(BASEPATH, "data")
+DB_NAME = os.path.join(DB_DIR, DB_BASENAME)
+
 
 #allow for someone to override config with a separte file. 
 try:
