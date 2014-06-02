@@ -73,7 +73,7 @@ class FileManager(threading.Thread):
 		for root, dirs, files in os.walk(fileObject.getFilename()):
 			for filename in files:
 				try:
-					newho = hashObject.HashObject(os.path.join(root,filename))
+					newho = hashObject.HashObject(os.path.join(root,filename), fileObject)
 					if newho.isRegularFile():
 						self.__addFile(newho)
 					elif os.path.islink(newho.filename):

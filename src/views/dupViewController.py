@@ -17,8 +17,8 @@ class DupViewController(object):
 		
 		self.fileFormat = [i[0] for i in FILE]
 		self.itemMap = (
-				self.fileFormat.index("filename"),
-				self.fileFormat.index("size"),
+				self.fileFormat.index("shortname"),
+				self.fileFormat.index("niceSizeAndDesc"),
 				self.fileFormat.index("strongHash")
 			)
 		self.uidFunction = lambda x: x[0]

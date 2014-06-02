@@ -4,8 +4,8 @@ import fileObject
 #A file, derived under a fileObject
 class HashObject(fileObject.FileObject):
 	
-	def __init__(self, filename):
-		fileObject.FileObject.__init__(self,filename)
+	def __init__(self, filename, rootParent):
+		fileObject.FileObject.__init__(self,filename, rootParent)
 		
 		self._weakHash = ""
 		self._weakHashFunction = None

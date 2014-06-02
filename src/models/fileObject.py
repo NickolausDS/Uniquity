@@ -15,9 +15,13 @@ class FileObject(object):
 				"formatteddesc":lambda x: FileObject.getNiceSizeInBytes(x, desc=True)
 	}
 	
-	def __init__(self, filename):
+	def __init__(self, filename, rootParent=None):
 		self._filename = unicode(filename)
 		self._stat = None
+		if rootParent:
+			self._rootParent = rootParent.filename
+		else:
+			self._rootParent = ""
 		
 	@property
 	def filename(self):
@@ -26,6 +30,10 @@ class FileObject(object):
 	@property
 	def basename(self):
 		return os.path.basename(self.filename)
+		
+	@property
+	def shortname(self):
+		return self.filename.replace(os.path.abspath(os.path.join(self._rootParent, os.path.pardir)) + os.path.sep, "")
 		
 	#Since getting file statistics is a system call, we won't stat a file
 	#unless we *Must* do so. System calls are expensive in large quantities. 
