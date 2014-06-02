@@ -1,5 +1,15 @@
 ##VERSION 0.4.2-alpha
 
+Added features
+
+* Added nicer filename formatting
+* Scans now auto-sort files based on size
+
+Fixed
+
+* Fix bug with "flicker effect" when selecting files during large scans
+* Various stability bugs
+
 ##VERSION 0.4.1-alpha
 
 Added features
