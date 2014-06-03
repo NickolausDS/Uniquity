@@ -1,3 +1,15 @@
+"""
+Main GUI module for Uniquity. 
+
+This class is responsible for starting and stopping both the 'view'
+and the 'model'. It is structured, as best as possible, in an MVC
+design pattern. 'View' corresponds with GUI elements, and 'model' 
+corresponds to the Uniquity backend responsible for scanning and
+verifying information. Additionally, the 'controllers' are the glue
+that hold together both the view and the model. 
+
+See the Controller class for invoking the Uniquity GUI.
+"""
 import models.uniquity as uniquity
 import wx
 import logging
@@ -11,6 +23,13 @@ import dupViewController
 from wx.lib.pubsub import pub
 
 class Controller(object):
+	"""
+	The controller is the main object for starting the Uniquity GUI.
+	
+	Calling init sets up both the view and the model. Afterward, the 
+	mainLoop() method needs to be called in order for the GUI to run, 
+	or it will exit instantaneously.
+	"""
 	
 	def __init__(self):	
 		#Setup the logger
@@ -48,20 +67,33 @@ class Controller(object):
 		pub.subscribe(self.dupVC.deleteSelected, "main.deletedupfiles")
 	
 	def mainLoop(self):
+		"""
+		This runs the main thread for the GUI. After the GUI is closed by the
+		user, this method also ensures the model is saved and shutdown. 
+		"""
 		#Run the main gui loop. This will run until Uniquity shuts down.
 		self.app.MainLoop()
 		#We are finished, release all model resources
 		if self.uniquity:
 			self.uniquity.shutdown()
 	
-	#Returns False on success, or the name of the file on failure (file already added)
 	def __addFile(self, filename):
+		"""
+		Add a single file (or directory) to be scanned by uniquity. Isn't meant to be
+		used externally, because it doesn't update the view
+		Returns False on success, or the name of the file on failure (file already added)
+		
+		"""
 		if self.uniquity.addFile(filename):
 			return False
 		return filename
 	
-	#Add new files or directories to scan with uniquity
 	def addFiles(self, files):
+		"""
+		Add multiple files or directories (in a list of filenames) 
+		to be scanned by Uniquity. Updates the view on successful
+		or unsuccessful "adds"
+		"""
 		if not files:
 			return
 		
@@ -88,8 +120,11 @@ class Controller(object):
 		self.mainView.updateDirView(self.uniquity.getFiles())
 		
 	
-	#Remove files or directories from the list of hashObjects to scan with uniqutiy.		
 	def removeFiles(self, files):
+	"""
+	Remove files or directories from the main list of objects
+	to scan. Updates the view on success or fail.
+	"""
 		if not files:
 			return
 		
@@ -110,6 +145,11 @@ class Controller(object):
 		self.mainView.updateDirView(self.uniquity.getFiles())
 		
 	def updateViewProgress(self):
+		"""
+		Update the entire view with new model information. Sub-controllers
+		may *decide* not to update their view if the model has not changed.
+		See each sub-controller's update for more information. 
+		"""
 		self.mainView.updateUpdatePanel(self.uniquity.getUpdate(fileFormat="basename"))
 		self.dupVC.update()
 	
