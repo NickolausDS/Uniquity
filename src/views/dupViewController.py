@@ -30,13 +30,15 @@ class DupViewController(object):
 	def getFilename(self, fileobj):
 		return fileobj[0]
 		
-	def update(self):
+	def update(self, forced=False):
 		newStats = self.uniquity.getUpdate()
-		if self.stats != newStats:
+		if self.stats != newStats or forced:
 			self.stats = newStats
-			newData = self.uniquity.getDuplicateFiles(onlyReturnNewData=True)
+			if forced:
+				newData = self.uniquity.getDuplicateFiles()
+			else:
+				newData = self.uniquity.getDuplicateFiles(onlyReturnNewData=True)
 			if newData:	
-				self.log.debug("Model returned new Duplicate data, updating View!")
 				self.view.update(newData)
 			
 	def viewSelected(self):
@@ -56,7 +58,7 @@ class DupViewController(object):
 			pub.sendMessage("dupview.statuserror",
 				error="Select a file in the duplicate list to view it")
 
-		
+
 	def deleteSelected(self):
 		toDelete = self.view.getSelected()
 		if toDelete:
@@ -70,12 +72,21 @@ class DupViewController(object):
 			result = askDialog.ShowModal()
 			askDialog.Destroy()	
 			if result == wx.ID_YES:
+				errors = False
 				for theFile in toDelete:
 					try:
 						os.remove(self.getFilename(theFile))
 					except Exception as e:
 						self.log.exception(e)
-						pub.sendMessage("dupview.error","Could not delete '%s'.", self.getFilename(theFile))
+						errors = True
+						pub.sendMessage("dupview.statuserror",error="Could not delete '%s'." % self.getFilename(theFile))
+				if not errors:
+					pub.sendMessage("dupview.status", text="Deleted %d files." % len(toDelete))
+				self.update(True)
+
 		else:
-			pub.sendMessage("dupview.error", error="Select one or more duplicate files from the list to delete.")
+			pub.sendMessage("dupview.statuserror", error="Select one or more duplicate files from the list to delete.")
+						
+						
+
 				

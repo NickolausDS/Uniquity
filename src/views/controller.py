@@ -117,14 +117,15 @@ class Controller(object):
 		self.log.info(msg)	
 		
 		self.mainView.splitView()
+		self.dupVC.update(forced=True)
 		self.mainView.updateDirView(self.uniquity.getFiles())
 		
 	
 	def removeFiles(self, files):
-	"""
-	Remove files or directories from the main list of objects
-	to scan. Updates the view on success or fail.
-	"""
+		"""
+		Remove files or directories from the main list of objects
+		to scan. Updates the view on success or fail.
+		"""
 		if not files:
 			return
 		
@@ -142,6 +143,7 @@ class Controller(object):
 			self.mainView.status(msg)
 		self.log.info(msg)
 		
+		self.dupVC.update(forced=True)
 		self.mainView.updateDirView(self.uniquity.getFiles())
 		
 	def updateViewProgress(self):
