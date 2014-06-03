@@ -9,17 +9,31 @@ Features are listed in no particular order.
 	* Currently only Mac OSX is supported, add support to windows and linux
 * Better duplicate file reporting
 	* Allow for sorting by: 
-		* size
 		* directory 
 * Better progress reporting
 	* Show actual number of duplicate files
 	* Show number of files to be verified
 * A GUI for reading log reports
-* Better File Menu Support
 * Include changelog in frozen distribution
 * Include version information in frozen distribution
-* Remove "flicker effect" that cropped up 
 * Better Packaging
 	* Option to build but not package
-	* When packaging, remove all temp materials when finished (better cleanup)
+	* When packaging, remove all temp materials when finished (better cleanup)	
+* Better File Menu Support
+	
 
+###In progress
+
+* Fix "remove" not working
+	* Duplicate files from main scanned directory are still displayed even when it is removed
+* Mark file as "deleted" when deleted
+* Better deletion support
+
+###Done
+
+* Remove "flicker effect" that cropped up 
+* Allow for sorting by: 
+	* size (done by default)
+* Formatting
+	* nice sizes (not in bytes)
+	* nice filenames (shorter)

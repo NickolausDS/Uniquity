@@ -35,6 +35,10 @@ class FileObject(object):
 	def shortname(self):
 		return self.filename.replace(os.path.abspath(os.path.join(self._rootParent, os.path.pardir)) + os.path.sep, "")
 		
+	@property
+	def rootParent(self):
+		return self._rootParent
+		
 	#Since getting file statistics is a system call, we won't stat a file
 	#unless we *Must* do so. System calls are expensive in large quantities. 
 	@property

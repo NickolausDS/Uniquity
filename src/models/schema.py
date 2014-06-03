@@ -6,6 +6,7 @@ FILE = (
 	("filename", str),
 	("shortname", str),
 	("basename", str),
+	("rootParent", str),
 	("size", int),
 	("niceSize", str),
 	("niceSizeAndDesc", str),
