@@ -1,3 +1,12 @@
+"""
+Main model class responsible for scanning and verifying duplicate files. This module
+is the heart of Uniquity. See the class for details on its use.
+
+
+NOTE: The model is in a dirty state since version 0.4.1, when the db was introduced.
+Expect lots of old Application code as the re-write hasn't happened yet. The re-write
+should be completed by version 0.5.x, and by then you can disregard this message.
+"""
 import hashlib
 import zlib
 import os
@@ -19,6 +28,19 @@ import operator
 
 
 class Uniquity:
+	"""
+	Main model class. 
+	
+	During initialization, it starts worker threads, then waits for calls
+	to addFile(s) to begin scanning. Shutdown() needs to be called to ensure
+	data isn't lost. 
+	
+	AddFile(s) is an asynchronous operation (unless block=True) and returns 
+	immediately. Gets can be called whenever, however the data set returned 
+	will not be complete until scanning and verification is finished (ensured
+	if block=True). Updates supply information about the current state of
+	running operations. 
+	"""
 	
 	
 	def __init__(self):
@@ -73,6 +95,13 @@ class Uniquity:
 
 	#try for graceful shutdown. Returns true if successful, false if it quit with jobs running.
 	def shutdown(self):
+		"""
+		Shutdown all workers, and save the current state of data. If the time it takes
+		for each resource is longer than SHUTDOWN_MAX_WAIT, then they are terminated early
+		and only the set of data from their last save is kept. 
+		
+		Returns True on graceful shutdown, False if SHUTDOWN_MAX_WAIT was exceeded.
+		"""
 		exitStatus = True
 		#shutdown file manager 
 		if self.fileManager.isAlive():
@@ -115,16 +144,26 @@ class Uniquity:
 			return False
 		
 	def addFiles(self, inputFiles, block=False):
-		"""Add a list of files, and return a list of booleans for success
-		Keyword arguments:
+		"""
+		Add a list of filenames to be scanned.
+		
 		block -- don't return until scanning and verification has finished (default False)
+		
+		Return a list of booleans for success or failure of each added file. (in same order given)
 		"""
 		retval = []
 		for each in inputFiles:
 			retval.append(self.addFile(each, block))
 		return retval
 			
-	def removeFile(self, thefile):	
+	def removeFile(self, thefile):
+		"""
+		Remove a file or directory (string filename) from the list to be scanned
+		Afterward the file (or subfiles if directory) will not be included in 
+		latter calls to get files.
+		
+		Returns True if successful, False if the file wasn't in the list
+		"""	
 		fo = fileObject.FileObject(thefile)
 		if fo in self.rootFileObjects:
 			self.rootFileObjects.remove(fo)
@@ -136,6 +175,11 @@ class Uniquity:
 			
 			
 	def removeFiles(self, files):
+		"""
+		Remove multiple files (given as an iterator) from the list of 'to be scanned'. 
+		
+		Returns a list of booleans, for success or failure of each remove
+		"""
 		retval = []
 		for each in files:
 			retval.append(self.removeFile(each))
@@ -174,6 +218,8 @@ class Uniquity:
 		
 	def getUpdate(self, sizeFormat="formatted", fileFormat="fullname"):
 		"""
+		The format for updates is below, 
+		please refer to it, but expect it to change.
 		(
 			(uniquity status)
 			(fileManager status, current file, files scanned, total scan size)
