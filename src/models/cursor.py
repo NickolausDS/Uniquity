@@ -110,13 +110,20 @@ class Cursor(object):
 			Cursor.lastCommit = time.time()
 				
 	
-	def query(self, obj, cols=[]):
+	def query(self, obj, cols=[], filters=[]):
 		"""
 		Returns a list of columns (cols) from obj (obj)
 		"""
+		values = []
 		queryCols = ",".join(cols)
 		query = """select %s from %s""" % (queryCols, obj.DB_TABLE_NAME)
-		rows = self.cursor.execute(query)
+		if filters:
+			query += " where %s" % " and ".join(["%s=?"%each[0] for each in filters])
+			values.extend([vals[1] for vals in filters])
+		if values:
+			rows = self.cursor.execute(query, values)
+		else:
+			rows = self.cursor.execute(query)
 		return rows.fetchall()
 		
 	def delete(self, obj, col, id):
