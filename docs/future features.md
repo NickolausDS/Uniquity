@@ -24,13 +24,13 @@ Features are listed in no particular order.
 
 ###In progress
 
+
+###Done
+
 * Fix "remove" not working
 	* Duplicate files from main scanned directory are still displayed even when it is removed
 * Mark file as "deleted" when deleted
 * Better deletion support
-
-###Done
-
 * Remove "flicker effect" that cropped up 
 * Allow for sorting by: 
 	* size (done by default)

@@ -9,6 +9,8 @@ Fixed
 
 * Fix bug with "flicker effect" when selecting files during large scans
 * Various stability bugs
+* Duplicate file deletes not working as they should
+* Lists of duplicate files showing up even though the parent objects were removed
 
 ##VERSION 0.4.1-alpha
 
