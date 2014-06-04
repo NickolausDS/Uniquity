@@ -65,7 +65,7 @@ class Cursor(object):
 	def setupTables(self):
 		cursor = self.conn.cursor()
 		for tableName in schema.TYPES:
-			query = "CREATE TABLE IF NOT EXISTS %s (" % tableName
+			query = "CREATE TABLE IF NOT EXISTS %s (dbid INTEGER PRIMARY KEY AUTOINCREMENT," % tableName
 			columns = []
 			for column in getattr(schema, tableName):
 				columns.append("%s %s" % (column[0], self.__getSQLType(column[1]) ))
@@ -81,9 +81,13 @@ class Cursor(object):
 			raise ValueError("Unable to save '%s' to database, save function non-existant in schema." % type)
 		else:
 			table = getattr(schema, type)
+			values = [value[0] for value in table]
 			data = [getattr(obj, objdata[0]) for objdata in table]
 			
-			query = "INSERT INTO %s VALUES (%s)" % (type, ",".join("?" * len(data)))	
+			query = "INSERT INTO %s (%s) VALUES (%s)" % (type, 
+						",".join(values),
+						",".join("?" * len(data))
+						)	
 			self.cursor.execute(query, data)
 			self.conn.commit()
 			Cursor.lastCommit = time.time()
@@ -95,6 +99,7 @@ class Cursor(object):
 		return rows.fetchall()
 		
 		
+	
 			
 	# def load(self, obj, objtype, query):
 	# 	"""Load data into a list of type 'obj' with query 'query'"""
