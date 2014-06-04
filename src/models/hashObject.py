@@ -4,6 +4,21 @@ import fileObject
 #A file, derived under a fileObject
 class HashObject(fileObject.FileObject):
 	
+	DB_TABLE_NAME = "HashObject"
+	DB_SAVE_ATTRS = (
+		("filename", str),
+		("shortname", str),
+		("basename", str),
+		("scanParent", str),
+		("size", int),
+		("niceSize", str),
+		("niceSizeAndDesc", str),
+		("weakHash", str),
+		("weakHashFunction", str),
+		("strongHash", str),
+		("strongHashFunction", str),
+		)
+	
 	def __init__(self, filename, rootParent):
 		fileObject.FileObject.__init__(self,filename, rootParent)
 		

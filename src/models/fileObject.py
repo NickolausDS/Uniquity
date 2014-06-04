@@ -5,21 +5,6 @@ import math
 
 class FileObject(object):
 	
-	DB_TABLE_NAME = "FileObject"
-	DB_SAVE_ATTRS = (
-		("filename", str),
-		("shortname", str),
-		("basename", str),
-		("scanParent", str),
-		("size", int),
-		("niceSize", str),
-		("niceSizeAndDesc", str),
-		("weakHash", str),
-		("weakHashFunction", str),
-		("strongHash", str),
-		("strongHashFunction", str),
-		)
-	
 	fileFormats = {
 				"basename":lambda fo: fo.basename,
 				"shortname":lambda fo: fo.basename,

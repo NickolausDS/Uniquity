@@ -21,6 +21,7 @@ import fileManager
 import hasher
 import fileObject
 import scanParent
+import hashObject
 import data.config as config
 import cursor
 
@@ -62,7 +63,7 @@ class Uniquity:
 			pass
 			
 		#Setup the db.	
-		tables = [fileObject.FileObject, scanParent.ScanParent]
+		tables = [hashObject.HashObject, scanParent.ScanParent]
 		for each in tables:
 			cursor.Cursor.registerTable(each)
 		self.cursor = cursor.Cursor()
@@ -187,7 +188,7 @@ class Uniquity:
 			
 	#Get the files previously added files (in filename format)
 	def getFiles(self):
-		"""Return a list of the root file objects previously added to Uniquity"""
+		"""Return a list of the root scan objects previously added to Uniquity"""
 		query = self.cursor.query(scanParent.ScanParent, ["filename"])
 		niceList = [each[0] for each in query]
 		return niceList
@@ -199,8 +200,6 @@ class Uniquity:
 			time.sleep(self.UPDATE_INTERVAL)
 		self.log.info("Uniquity finished all jobs.")
 
-	#Returns all duplicate files, as a giant list of smaller duplicate file lists.
-	#ex. [[dupfilename1, dupfilename1copy], [dupfilename2, dupfilename2copy, dupfilename2anothercopy]]
 	def getDuplicateFiles(self, onlyReturnNewData=False):
 		if onlyReturnNewData and self.lastDBFetch > cursor.Cursor.lastCommit:
 			return None

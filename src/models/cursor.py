@@ -3,9 +3,10 @@ import schema
 import time
 import logging
 
+
 import os
 from data.config import DB_NAME, DB_DIR, MAIN_LOG_NAME
-
+import hashObject
 
 class Cursor(object):
 
@@ -127,7 +128,9 @@ class Cursor(object):
 		return rows.fetchall()
 	
 	def getDupData(self):
-		query = """select * from FileObject where strongHash in (select strongHash from (select strongHash, count(*) as numdups from FileObject group by strongHash order by numdups) where numdups>1 and scanParent in (select filename from ScanParent))  order by size DESC"""
+		spAttrs = ",".join([each[0] for each in hashObject.HashObject.DB_SAVE_ATTRS])
+		name = hashObject.HashObject.DB_TABLE_NAME
+		query = """select %s from %s where strongHash in (select strongHash from (select strongHash, count(*) as numdups from %s group by strongHash order by numdups) where numdups>1 and scanParent in (select filename from ScanParent))  order by size DESC""" % (spAttrs, name, name)
 		rows = self.cursor.execute(query)
 		return rows.fetchall()
 		

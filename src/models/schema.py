@@ -1,3 +1,8 @@
+"""
+This file shouldn't be used as of 0.4.2. It's still used by some objects. When they're 
+refactored, this will go away.
+"""
+
 
 #Register the types here
 TYPES = ["FILE", "SCANPARENT"]
