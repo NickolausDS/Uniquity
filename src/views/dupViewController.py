@@ -76,7 +76,7 @@ class DupViewController(object):
 				errors = False
 				for theFile in toDelete:
 					try:
-						os.remove(self.getFilename(theFile))
+						self.uniquity.deleteFile(self.getFilename(theFile))
 					except Exception as e:
 						self.log.exception(e)
 						errors = True

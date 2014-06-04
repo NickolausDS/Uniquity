@@ -185,7 +185,23 @@ class Uniquity:
 			retval.append(self.removeFile(each))
 		return retval
 		
-			
+	def deleteFile(self, filename):
+		
+		q = self.cursor.query(hashObject.HashObject, ["filename"], [("filename", filename)])
+		if q:
+			self.cursor.delete(hashObject.HashObject, "filename", q[0][0])
+			r = self.cursor.query(hashObject.HashObject, ["filename"], [("filename", filename)])
+			os.remove(filename)	
+			if not r:
+				self.log.debug("Deleted %s successfully.", filename)
+				return True
+			else:
+				self.log.error("Failed to delete %s!", filename)
+		else:
+			self.log.info("Tried to delete '%s', but it doesn't exist in the list of files we have.", filename)
+		return False		
+				
+				
 	#Get the files previously added files (in filename format)
 	def getFiles(self):
 		"""Return a list of the root scan objects previously added to Uniquity"""
