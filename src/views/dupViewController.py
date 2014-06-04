@@ -36,10 +36,11 @@ class DupViewController(object):
 			self.stats = newStats
 			if forced:
 				newData = self.uniquity.getDuplicateFiles()
+				self.view.update(newData)
 			else:
 				newData = self.uniquity.getDuplicateFiles(onlyReturnNewData=True)
-			if newData:	
-				self.view.update(newData)
+				if newData:	
+					self.view.update(newData)
 			
 	def viewSelected(self):
 		#We only support opening one file at a time
