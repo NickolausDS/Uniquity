@@ -188,7 +188,7 @@ class Hasher(threading.Thread):
 		return [self.duplicateFiles[item] for item in self.duplicateFilesStortedIndex[0:nItems]]
 		
 	def __addFile(self, newho):
-		self.cursor.save('FILE', newho)
+		self.cursor.save(newho)
 		#Check if a record already exists
 		record = self.verifiedFiles.get(newho.hashes, None)
 		#If there's no record, this file is unique

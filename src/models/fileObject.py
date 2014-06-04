@@ -4,6 +4,22 @@ import math
 
 
 class FileObject(object):
+	
+	DB_TABLE_NAME = "FileObject"
+	DB_SAVE_ATTRS = (
+		("filename", str),
+		("shortname", str),
+		("basename", str),
+		("scanParent", str),
+		("size", int),
+		("niceSize", str),
+		("niceSizeAndDesc", str),
+		("weakHash", str),
+		("weakHashFunction", str),
+		("strongHash", str),
+		("strongHashFunction", str),
+		)
+	
 	fileFormats = {
 				"basename":lambda fo: fo.basename,
 				"shortname":lambda fo: fo.basename,
@@ -15,13 +31,13 @@ class FileObject(object):
 				"formatteddesc":lambda x: FileObject.getNiceSizeInBytes(x, desc=True)
 	}
 	
-	def __init__(self, filename, rootParent=None):
+	def __init__(self, filename, scanParent=None):
 		self._filename = unicode(filename)
 		self._stat = None
-		if rootParent:
-			self._rootParent = rootParent.filename
+		if scanParent:
+			self._scanParent = scanParent.filename
 		else:
-			self._rootParent = ""
+			self._scanParent = ""
 		
 	@property
 	def filename(self):
@@ -33,11 +49,11 @@ class FileObject(object):
 		
 	@property
 	def shortname(self):
-		return self.filename.replace(os.path.abspath(os.path.join(self._rootParent, os.path.pardir)) + os.path.sep, "")
+		return self.filename.replace(os.path.abspath(os.path.join(self._scanParent, os.path.pardir)) + os.path.sep, "")
 		
 	@property
-	def rootParent(self):
-		return self._rootParent
+	def scanParent(self):
+		return self._scanParent
 		
 	#Since getting file statistics is a system call, we won't stat a file
 	#unless we *Must* do so. System calls are expensive in large quantities. 

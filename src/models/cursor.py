@@ -20,6 +20,7 @@ class Cursor(object):
 	
 	#Last time the db was committed to
 	lastCommit = -1
+	tables = []
 	
 	
 	def __init__(self):
@@ -61,13 +62,18 @@ class Cursor(object):
 			return "TEXT"
 		elif theType == int:
 			return "INTEGER"
-		
+	
+	@staticmethod
+	def registerTable(obj):
+		Cursor.tables.append(obj)
+			
 	def setupTables(self):
 		cursor = self.conn.cursor()
-		for tableName in schema.TYPES:
-			query = "CREATE TABLE IF NOT EXISTS %s (dbid INTEGER PRIMARY KEY AUTOINCREMENT," % tableName
+		for obj in Cursor.tables:
+			tablename = getattr(obj, "DB_TABLE_NAME")
+			query = "CREATE TABLE IF NOT EXISTS %s (dbid INTEGER PRIMARY KEY AUTOINCREMENT," % tablename
 			columns = []
-			for column in getattr(schema, tableName):
+			for column in getattr(obj, "DB_SAVE_ATTRS"):
 				columns.append("%s %s" % (column[0], self.__getSQLType(column[1]) ))
 			query += ",".join(columns)
 			query += ")"
@@ -75,26 +81,53 @@ class Cursor(object):
 			cursor.execute(query)
 			self.conn.commit()
 			Cursor.lastCommit = time.time()
-		
-	def save(self, type, obj):		
-		if type not in schema.TYPES:
-			raise ValueError("Unable to save '%s' to database, save function non-existant in schema." % type)
-		else:
-			table = getattr(schema, type)
-			values = [value[0] for value in table]
-			data = [getattr(obj, objdata[0]) for objdata in table]
 			
-			query = "INSERT INTO %s (%s) VALUES (%s)" % (type, 
+	def save(self, obj):
+		# try:
+		saveAttrs = getattr(obj, "DB_SAVE_ATTRS", None)
+		if not saveAttrs:
+			raise ValueError("Unable to save '%s' to database, DB_SAVE_ATTRS not set." % obj)
+		else:
+			values = [value[0] for value in saveAttrs]
+			data = [getattr(obj, objdata) for objdata in values]
+
+			query = "INSERT INTO %s (%s) VALUES (%s)" % (obj.DB_TABLE_NAME, 
 						",".join(values),
 						",".join("?" * len(data))
 						)	
-			self.cursor.execute(query, data)
+			# self.log.debug("QUERY %s, DATA %s", query, data)
+			try:
+				self.cursor.execute(query, data)
+			except sqlite3.OperationalError as oe:
+				if "no such table" in str(oe):
+					Cursor.registerTable(obj)
+					self.setupTables()
+					self.save(obj)
+				else:
+					raise oe
 			self.conn.commit()
 			Cursor.lastCommit = time.time()
+				
+	
+	def query(self, obj, cols=[]):
+		"""
+		Returns a list of columns (cols) from obj (obj)
+		"""
+		queryCols = ",".join(cols)
+		query = """select %s from %s""" % (queryCols, obj.DB_TABLE_NAME)
+		rows = self.cursor.execute(query)
+		return rows.fetchall()
+		
+	def delete(self, obj, col, id):
+		"""
+		Delete an object from table (obj) where column (col) matches (id)
+		"""
+		query = """delete from %s where %s=?""" % (obj.DB_TABLE_NAME, col)
+		rows = self.cursor.execute(query, [id])
+		return rows.fetchall()
 	
 	def getDupData(self):
-		
-		query = """select * from FILE where strongHash in (select strongHash from (select strongHash, count(*) as numdups from FILE group by strongHash order by numdups) where numdups>1) order by size DESC"""
+		query = """select * from FileObject where strongHash in (select strongHash from (select strongHash, count(*) as numdups from FileObject group by strongHash order by numdups) where numdups>1 and scanParent in (select filename from ScanParent))  order by size DESC"""
 		rows = self.cursor.execute(query)
 		return rows.fetchall()
 		
@@ -118,19 +151,6 @@ class Cursor(object):
 	# 		
 	# 	return data
 		
-						
-	def __saveFile(self, objdata):
-		pass
-		# sql = "INSERT INTO files VALUES (%s)" % ",".join("?" * len(objdata))
-		# cursor = self.conn.cursor()
-		# cursor.execute(sql, objdata)
-		# cursor.close()
-		# self.conn.commit()
-		
-					
-		# STANDARD_STAT_FORMAT = ['st_mode', 'st_ino', 'st_dev', 'st_nlink', 
-		# 						'st_uid', 'st_gid', 'st_size',
-		# 						'st_atime', 'st_mtime', 'st_ctime']
 
 class UniquityDBException(Exception):
 	def __init__(self, value):

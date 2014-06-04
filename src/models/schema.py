@@ -1,6 +1,6 @@
 
 #Register the types here
-TYPES = ["FILE"]
+TYPES = ["FILE", "SCANPARENT"]
 
 FILE = (
 	("filename", str),
@@ -15,4 +15,9 @@ FILE = (
 	("strongHash", str),
 	("strongHashFunction", str),
 	)
+
+SCANPARENT = (
+	("filename", str),
+	)
+
 

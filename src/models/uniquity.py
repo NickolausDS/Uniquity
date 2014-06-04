@@ -20,6 +20,7 @@ import logger
 import fileManager
 import hasher
 import fileObject
+import scanParent
 import data.config as config
 import cursor
 
@@ -45,8 +46,6 @@ class Uniquity:
 	
 	def __init__(self):
 		self.log = logging.getLogger('.'.join((config.MAIN_LOG_NAME, 'Main')))
-		#A list of all the directories (and files) scanned by uniquity. 
-		self.rootFileObjects = []
 		#All files will be stored here as hashObjects, indexed by their filesize. The format follows:
 		# {10000: [so1, so2], 1234: [so3], 4567:[so4, so5, so6]}
 		self.scannedFiles = {}
@@ -63,6 +62,9 @@ class Uniquity:
 			pass
 			
 		#Setup the db.	
+		tables = [fileObject.FileObject, scanParent.ScanParent]
+		for each in tables:
+			cursor.Cursor.registerTable(each)
 		self.cursor = cursor.Cursor()
 		self.cursor.setupTables()
 		
@@ -131,12 +133,12 @@ class Uniquity:
 		"""Add a single file (string), and return a boolean for success
 		Keyword arguments:
 		block -- don't return until scanning and verification has finished (default False)
-		"""
-		newjob = fileObject.FileObject(theFile)
-		if newjob not in self.rootFileObjects:
-			self.fileQueue.put(newjob)
-			self.rootFileObjects.append(newjob)
-			self.log.debug("Adding new file: " + str(theFile))
+		"""		
+		if theFile not in self.getFiles():
+			newsp = scanParent.ScanParent(theFile)
+			self.cursor.save(newsp)
+			self.fileQueue.put(newsp)
+			self.log.debug("Adding new scan parent: %s" % theFile)
 			if block:
 				self.__waitUntilFinished()
 			return True
@@ -164,13 +166,10 @@ class Uniquity:
 		
 		Returns True if successful, False if the file wasn't in the list
 		"""	
-		fo = fileObject.FileObject(thefile)
-		if fo in self.rootFileObjects:
-			self.rootFileObjects.remove(fo)
-			self.log.critical("File '%s' not actually removed from model," + 
-			" functionality not implemented yet!")
-			return True
-		return False
+		ret = self.cursor.delete(scanParent.ScanParent, "filename", thefile)
+		if thefile in self.getFiles():
+			return False
+		return True
 		
 			
 			
@@ -189,7 +188,10 @@ class Uniquity:
 	#Get the files previously added files (in filename format)
 	def getFiles(self):
 		"""Return a list of the root file objects previously added to Uniquity"""
-		return [each.filename for each in self.rootFileObjects]
+		query = self.cursor.query(scanParent.ScanParent, ["filename"])
+		niceList = [each[0] for each in query]
+		return niceList
+		# return [each.filename for each in self.rootFileObjects]
 			
 	def __waitUntilFinished(self):
 		time.sleep(self.UPDATE_INTERVAL)
