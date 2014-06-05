@@ -29,7 +29,14 @@ class MainWindow(wx.Frame, wx.FileDropTarget):
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 
 		#Our main view objects
-		self.fileMenu = FileMenu(self)
+		self.fileMenu = FileMenu()
+		self.fileMenu.Bind(wx.EVT_MENU, self.addFile, self.fileMenu.add)
+		self.fileMenu.Bind(wx.EVT_MENU, self.removeFiles, self.fileMenu.remove)
+		self.fileMenu.Bind(wx.EVT_MENU, self.About, self.fileMenu.about)
+		self.fileMenu.Bind(wx.EVT_MENU, self.OnClose, self.fileMenu.quit)
+		self.fileMenu.Bind(wx.EVT_MENU, self.viewFiles, self.fileMenu.viewFile)
+		self.fileMenu.Bind(wx.EVT_MENU, self.deleteFiles, self.fileMenu.delete)
+		self.SetMenuBar(self.fileMenu)
 		self.toolbar = Toolbar(self)
 		self.toolbar.Bind(wx.EVT_TOOL, self.addFile, self.toolbar.add)
 		self.toolbar.Bind(wx.EVT_TOOL, self.removeFiles, self.toolbar.remove)
@@ -93,6 +100,14 @@ class MainWindow(wx.Frame, wx.FileDropTarget):
 	def OnClose(self, e):
 		#We could have an 'are you sure' dialogue here if we wanted.
 		self.Destroy()
+		
+	def About(self,e):
+		# Create a message dialog box
+		message = "A program to find all of the duplicate files on your computer\n\n"
+		message += "A creation by Nickolaus Saint at \nWindward Productions"
+		dlg = wx.MessageDialog(self, message, "About Uniquity", wx.OK)
+		dlg.ShowModal() # Shows it
+		dlg.Destroy() # finally destroy it when finished.
 		
 	################
 	# View Methods #

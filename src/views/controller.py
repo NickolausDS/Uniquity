@@ -127,6 +127,7 @@ class Controller(object):
 		to scan. Updates the view on success or fail.
 		"""
 		if not files:
+			self.mainView.statusError("Please select a file from the list below.")
 			return
 		
 		rc = self.uniquity.removeFiles(files)

@@ -19,10 +19,11 @@ Features are listed in no particular order.
 * Better Packaging
 	* Option to build but not package
 	* When packaging, remove all temp materials when finished (better cleanup)	
-* Better File Menu Support
 	
 
 ###In progress
+
+* Better File Menu Support
 
 
 ###Done

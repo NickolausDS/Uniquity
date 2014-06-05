@@ -1,3 +1,12 @@
+##VERSION 0.4.3-alpha
+
+Added features
+
+* Completely reworked the file menu
+	* Looks prettier
+	* Hotkeys now work
+	
+
 ##VERSION 0.4.2-alpha
 
 Added features
