@@ -13,5 +13,6 @@ release/*.app
 release/[0-9].[0-9].[0-9]*
 src/build/
 config_override.py
+src/data/version.txt
 testing/test_files
 testing/testenv

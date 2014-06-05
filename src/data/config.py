@@ -12,6 +12,12 @@ else:
 
 IMAGE_DIR = os.path.join(BASEPATH, "assets")
 
+try:
+	vd = open(os.path.join(BASEPATH, os.path.join("data", "version.txt")))
+	VERSION = vd.readline()
+	vd.close()
+except Exception:
+	VERSION = "<Unable to Determine>"
 
 #Time in seconds for uniquity to post progress updates, on both
 #the file_manager and the hasher. 

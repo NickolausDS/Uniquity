@@ -103,8 +103,9 @@ class MainWindow(wx.Frame, wx.FileDropTarget):
 		
 	def About(self,e):
 		# Create a message dialog box
-		message = "A program to find all of the duplicate files on your computer\n\n"
-		message += "A creation by Nickolaus Saint at \nWindward Productions"
+		message = "A program to find all of the duplicate files on your computer.\n\n"
+		message += "Version: %s\n" % config.VERSION
+		message += "Windward Productions -- windwardproductions.org"
 		dlg = wx.MessageDialog(self, message, "About Uniquity", wx.OK)
 		dlg.ShowModal() # Shows it
 		dlg.Destroy() # finally destroy it when finished.

@@ -18,9 +18,12 @@ chlog = open("../changelog.md", "r")
 version = chlog.readline().split()[1]
 chlog.close()
 
+vfile = open("data/version.txt", "w")
+vfile.write(version)
+vfile.close()
 
 #Files to include within the package
-includefiles = ["assets"]
+includefiles = ["assets", "data/version.txt"]
 
 # Dependencies are automatically detected, but it might need fine tuning.
 build_exe_options = {
