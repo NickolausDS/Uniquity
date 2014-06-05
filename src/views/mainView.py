@@ -1,4 +1,5 @@
 import wx
+import os
 import logging
 from wx.lib.pubsub import pub
 
@@ -101,10 +102,9 @@ class MainWindow(wx.Frame, wx.FileDropTarget):
 		theFile = None
 		dirname = "."
 		""" Open a file"""
-		dlg = wx.DirDialog(self, "Choose a Directory", ".")
+		dlg = wx.DirDialog(self, "Choose a directory to scan", os.path.expanduser('~'))
 		if dlg.ShowModal() == wx.ID_OK:
 			theFile = dlg.GetPath()
-			# pub.sendMessage("controller.addfile", file=dlg.GetPath())
 		dlg.Destroy()
 		pub.sendMessage("main.addfiles", files=[theFile])
 
