@@ -211,8 +211,12 @@ class Hasher(threading.Thread):
 			if len(record) == 2:
 				self.duplicateFiles[record[0].hashes] = record
 				self.duplicateFilesNewItems.append(record[0].size)
+				#Subtract from the unique pile
 				self.unique -= 1
 				self.uniqueSize -= newho.size
+				#Add it to the duplicate pile
+				self.duplicates += 1
+				self.duplicateSize += newho.size
 		self.hashed += 1
 		self.current = newho
 		
