@@ -3,8 +3,8 @@
 Added features
 
 * Completely reworked the file menu
-	* Looks prettier
 	* Hotkeys now work
+	* Stats panel now show better stats
 	
 
 ##VERSION 0.4.2-alpha
