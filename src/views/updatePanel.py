@@ -20,17 +20,17 @@ class UpdatePanel(wx.Panel):
 		#presents stat data. Darn, this breaks the MVC pattern, doesn't it?
 		
 		column1 = [
-					["Scanned: ", 		(1,2)], 
-					["Size Scanned: ", 	(1,3)], 
-					["Current File: ", 	(1,1)],
-					# ["",				(-1,-1)] #Empty 
+					["Scanned: ", 				(1,2)], 
+					["Total Size Scanned: ", 	(1,3)], 
+					["Scanning: ", 				(1,1)],
+					# ["",						(-1,-1)] #Empty 
 					]
 					
 		column2 = [
-					["Verified: ", 		(2,2) ],
-					["Size Verified: ", (2,3) ], 
-					["Current File: ", 	(2,1) ],
-					# ["",				(-1,-1)]
+					["Duplicate Files: ", 		(2,4) ],
+					["Total Duplicate Size: ", 	(2,5) ], 
+					["Verifying: ", 			(2,1) ],
+					# ["",						(-1,-1)]
 					]		
 				
 		# self.stats.SetBackgroundColour("#EDEDED")
@@ -61,16 +61,29 @@ class UpdatePanel(wx.Panel):
 
 
 	def updateProgress(self, stats):
-		
-			for col1, col2 in self.stats:
-				x,y = col1[1]
-				if x > -1:
-					col1[2].SetLabel("".join([col1[0], stats[x][y] ] ))
-				x,y = col2[1]
-				if x > -1:
-					col2[2].SetLabel("".join([col2[0], stats[x][y] ] ))
-				col1[2].Update()
-				col2[2].Update()
+			#Possible replacement code for the below. This only assumes the data is 
+			#a structure like this (which is better then the alternative mess): 
+			#(
+			#("info00", "info01")
+			#("info10", "info11")
+			#)
+			# for col1, col2 in self.stats:
+			# 	col1Labels, col2Labels = stats
+			# 	for idx in range(len(col1)):
+			# 		col1[idx].SetLabel(col1Labels[idx])
+			# 		col2[idx].SetLabel(col2Labels[idx])
+			# 		col1[idx].Update()
+			# 		col2[idx].Update()
+				
+		for col1, col2 in self.stats:
+			x,y = col1[1]
+			if x > -1:
+				col1[2].SetLabel("".join([col1[0], stats[x][y] ] ))
+			x,y = col2[1]
+			if x > -1:
+				col2[2].SetLabel("".join([col2[0], stats[x][y] ] ))
+			col1[2].Update()
+			col2[2].Update()
 		# ss = stats.get('scannerStatus')
 		# hs = stats.get('hasherStatus')
 		# if ss == 'running' and hs == 'idle':
