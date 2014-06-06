@@ -14,16 +14,13 @@ Features are listed in no particular order.
 	* Show actual number of duplicate files
 	* Show number of files to be verified
 * A GUI for reading log reports
-* Include changelog in frozen distribution
-* Include version information in frozen distribution
+
 * Better Packaging
 	* Option to build but not package
 	* When packaging, remove all temp materials when finished (better cleanup)	
 	
 
 ###In progress
-
-* Better File Menu Support
 
 
 ###Done
@@ -38,3 +35,6 @@ Features are listed in no particular order.
 * Formatting
 	* nice sizes (not in bytes)
 	* nice filenames (shorter)
+* Better File Menu Support
+* Include changelog in frozen distribution (wontdo)
+* Include version information in frozen distribution

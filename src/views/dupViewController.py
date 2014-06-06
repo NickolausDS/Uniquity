@@ -15,6 +15,7 @@ class DupViewController(object):
 		
 		self.uniquity = model
 		
+		
 		self.fileFormat = [i[0] for i in FILE]
 		self.itemMap = (
 				self.fileFormat.index("shortname"),
@@ -30,6 +31,15 @@ class DupViewController(object):
 	def getFilename(self, fileobj):
 		return fileobj[0]
 		
+	def setFileFormat(self, format):
+		formats = self.uniquity.getFileFormats()
+		if format not in formats.keys():
+			self.log.warning("Tried to set file format to '%s', but it doesn't exist!", format)
+		else:
+			self.itemMap = (formats[format],) + self.itemMap[1:]
+			kwargs = {"itemMap" : self.itemMap}
+			self.updateOptions(**kwargs)
+		
 	def update(self, forced=False):
 		newStats = self.uniquity.getUpdate()
 		if self.stats != newStats or forced:
@@ -41,6 +51,10 @@ class DupViewController(object):
 				newData = self.uniquity.getDuplicateFiles(onlyReturnNewData=True)
 				if newData:	
 					self.view.update(newData)
+					
+	def updateOptions(self, **kwargs):
+		self.view.updateOptions(**kwargs)
+		self.update(forced=True)
 			
 	def viewSelected(self):
 		#We only support opening one file at a time

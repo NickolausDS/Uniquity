@@ -226,11 +226,19 @@ class Uniquity:
 		if self.fileQueue.empty() and self.hashQueue.empty():
 			return True
 		return False
-		
-	def getFileFormats(self):
-		return self.fileObject.FileObject.fileFormats.keys()
-		
-	def getSizeFormats(self):
+	
+	@staticmethod	
+	def getFileFormats():
+		attrs = [each[0] for each in hashObject.HashObject.DB_SAVE_ATTRS]
+		fmts = {
+			"fullname": attrs.index("filename"),
+			"basename": attrs.index("basename"),
+			"shortname": attrs.index("shortname"),
+		}
+		return fmts
+	
+	@staticmethod	
+	def getSizeFormats():
 		return self.fileObject.FileObject.sizeFormats.keys()	
 		
 	def getUpdate(self, sizeFormat="formatted", fileFormat="fullname"):

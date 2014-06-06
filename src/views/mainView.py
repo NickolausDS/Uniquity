@@ -36,6 +36,9 @@ class MainWindow(wx.Frame, wx.FileDropTarget):
 		self.fileMenu.Bind(wx.EVT_MENU, self.OnClose, self.fileMenu.quit)
 		self.fileMenu.Bind(wx.EVT_MENU, self.viewFiles, self.fileMenu.viewFile)
 		self.fileMenu.Bind(wx.EVT_MENU, self.deleteFiles, self.fileMenu.delete)
+		self.fileMenu.Bind(wx.EVT_MENU, self.fileFormatFullName, self.fileMenu.fullName)
+		self.fileMenu.Bind(wx.EVT_MENU, self.fileFormatShortName, self.fileMenu.shortName)
+		self.fileMenu.Bind(wx.EVT_MENU, self.fileFormatBaseName, self.fileMenu.baseName)
 		self.SetMenuBar(self.fileMenu)
 		self.toolbar = Toolbar(self)
 		self.toolbar.Bind(wx.EVT_TOOL, self.addFile, self.toolbar.add)
@@ -132,6 +135,18 @@ class MainWindow(wx.Frame, wx.FileDropTarget):
 		
 	def deleteFiles(self, e):
 		pub.sendMessage("main.deletedupfiles")
+		
+	def fileFormatFullName(self, e):
+		pub.sendMessage("main.fileformat", format="fullname")
+
+	def fileFormatShortName(self, e):
+		pub.sendMessage("main.fileformat", format="shortname")
+	
+	def fileFormatBaseName(self, e):
+		pub.sendMessage("main.fileformat", format="basename")	
+	
+	def sizeFormat(self, e):
+		pub.sendMessage("main.sizeformat")
 		
 	def timerUpdate(self, e):
 		pub.sendMessage("main.updaterequest")

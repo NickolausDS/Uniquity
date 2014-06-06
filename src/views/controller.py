@@ -37,6 +37,8 @@ class Controller(object):
 			
 		#Setup the view
 		self.app = wx.App(False)
+		
+		# SecionName name description type_RADIO function
 		self.mainView = mainView.MainWindow(None, "Uniquity -- The Unique File Analyzer")
 		
 		#Setup the model. Setting it up after the view is convienient, as no model code
@@ -65,6 +67,8 @@ class Controller(object):
 		pub.subscribe(self.mainView.statusError, "dupview.statuserror")
 		pub.subscribe(self.dupVC.viewSelected, "main.viewdupfiles")
 		pub.subscribe(self.dupVC.deleteSelected, "main.deletedupfiles")
+		pub.subscribe(self.dupVC.setFileFormat, "main.fileformat")
+		
 	
 	def mainLoop(self):
 		"""

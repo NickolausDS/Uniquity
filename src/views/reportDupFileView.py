@@ -40,9 +40,11 @@ class ReportDupFileView(wx.ListCtrl):
 		self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OnItemDeselected)
 
 		self.items = []
+		self.CURRENTLY_UPDATING_SELECTIONS = False
+		
+		#Options
 		self.itemMap = itemMap #See SetItemMap for details
 		self.uniqueIdentifyerFunction = itemIDFunction
-		self.CURRENTLY_UPDATING_SELECTIONS = False
 		
 	def getSelected(self, deselectList=False):
 		selection = []
@@ -71,6 +73,12 @@ class ReportDupFileView(wx.ListCtrl):
 		self.CURRENTLY_UPDATING_SELECTIONS = False
 		
 		self.SetItemCount(len(self.items))
+	
+	def updateOptions(self, **newOptions):
+		self.itemMap = newOptions.get("itemMap", self.itemMap)
+		self.uniqueIdentifyerFunction = newOptions.get("uidFunc", self.uniqueIdentifyerFunction)
+		
+		
 	
 	def __selectNewList(self, oldSelectedObjects):
 		# names = [each.filename for each in oldSelectedObjects]

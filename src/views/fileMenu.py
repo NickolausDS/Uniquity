@@ -22,5 +22,12 @@ class FileMenu(wx.MenuBar):
 		self.Append(self.edit, "&Edit")
 		
 		self.view = wx.Menu()
+		self.fileFormat = wx.Menu()
+		self.fullName = self.fileFormat.Append(wx.NewId(), "&Full name", "Show the full path for files", wx.ITEM_RADIO)
+		self.shortName = self.fileFormat.Append(wx.NewId(), "&Short name", "Show a shorter path for files, based on directories scanned", wx.ITEM_RADIO)
+		self.baseName = self.fileFormat.Append(wx.NewId(), "&Base name", "Show only filenames", wx.ITEM_RADIO)
+		self.view.AppendMenu(wx.NewId(), "File Format", self.fileFormat)
 		self.viewFile = self.view.Append(wx.NewId(), "&Reveal in Finder")
 		self.Append(self.view, "&View")
+		
+			

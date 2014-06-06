@@ -22,6 +22,9 @@ class MainDupView(wx.Notebook):
 		
 	def update(self, files):
 		self.view.updateView(files)
+		
+	def updateOptions(self, **kwargs):
+		self.view.updateOptions(**kwargs)
 	
 	def getSelected(self):
 		"""Get the currently selected files from the view."""
