@@ -56,11 +56,11 @@ class Uniquity:
 		
 		
 		#cleanup old tables.
-		try:
-			if config.DB_NAME != ":memory:" and os.path.exists(config.DB_NAME):
-				os.remove(config.DB_NAME)
-		except Exception:
-			pass
+		# try:
+		if config.DB_NAME != ":memory:" and os.path.exists(config.DB_NAME):
+			os.remove(config.DB_NAME)
+		# except Exception:
+		# 	pass
 			
 		#Setup the db.	
 		tables = [hashObject.HashObject, scanParent.ScanParent]
