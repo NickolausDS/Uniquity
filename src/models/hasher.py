@@ -162,9 +162,9 @@ class Hasher(threading.Thread):
 			
 			#Consider moving this work onto a different thread. It doesn't really
 			#make sense for the hasher to do this work, and it's CPU intensive.
-			self.duplicateFilesSortedIndex.extend(self.duplicateFilesNewItems)
-			self.duplicateFilesSortedIndex.sort(reverse=True)
-			self.duplicateFilesNewItems = []
+			# self.duplicateFilesSortedIndex.extend(self.duplicateFilesNewItems)
+			# self.duplicateFilesSortedIndex.sort(reverse=True)
+			# self.duplicateFilesNewItems = []
 			
 			# self.updateCallback(statsCopy)
 			
